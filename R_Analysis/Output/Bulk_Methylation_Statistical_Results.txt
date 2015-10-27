@@ -1,0 +1,105 @@
+        model        Q2   pval
+1 M. capitata 0.1369568 < 0.04
+          model        Q2   pval
+1 P. damicornis 0.2907977 < 0.01
+    model        Q2   pval
+1 Species 0.7450837 < 0.01
+Call:
+   aov(formula = log10(Growth.Rate) ~ Treatment + Species + Treatment * 
+    Species, data = growth.rate)
+
+Terms:
+                Treatment  Species Treatment:Species Residuals
+Sum of Squares   0.382020 1.376171          0.010070  3.205577
+Deg. of Freedom         1        1                 1        89
+
+Residual standard error: 0.1897833
+Estimated effects may be unbalanced
+Analysis of Variance Table
+
+Response: log10(Growth.Rate)
+                  Df Sum Sq Mean Sq F value    Pr(>F)    
+Treatment          1 0.3820 0.38202 10.6065  0.001595 ** 
+Species            1 1.3762 1.37617 38.2082 1.878e-08 ***
+Treatment:Species  1 0.0101 0.01007  0.2796  0.598285    
+Residuals         89 3.2056 0.03602                      
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+  Tukey multiple comparisons of means
+    95% family-wise confidence level
+
+Fit: aov(formula = log10(Growth.Rate) ~ Treatment + Species + Treatment * Species, data = growth.rate)
+
+$Treatment
+                   diff        lwr         upr     p adj
+high-ambient -0.1281908 -0.2064013 -0.04998033 0.0015955
+
+$Species
+                                               diff        lwr        upr p adj
+Pocillopora damicornis-Montipora capitata -0.243966 -0.3223944 -0.1655375     0
+
+$`Treatment:Species`
+                                                                 diff        lwr
+high:Montipora capitata-ambient:Montipora capitata         -0.1029185 -0.2545122
+ambient:Pocillopora damicornis-ambient:Montipora capitata  -0.2233858 -0.3686422
+high:Pocillopora damicornis-ambient:Montipora capitata     -0.3680524 -0.5133088
+ambient:Pocillopora damicornis-high:Montipora capitata     -0.1204672 -0.2675518
+high:Pocillopora damicornis-high:Montipora capitata        -0.2651339 -0.4122184
+high:Pocillopora damicornis-ambient:Pocillopora damicornis -0.1446666 -0.2852108
+                                                                   upr     p adj
+high:Montipora capitata-ambient:Montipora capitata          0.04867511 0.2909103
+ambient:Pocillopora damicornis-ambient:Montipora capitata  -0.07812936 0.0006766
+high:Pocillopora damicornis-ambient:Montipora capitata     -0.22279598 0.0000000
+ambient:Pocillopora damicornis-high:Montipora capitata      0.02661730 0.1471993
+high:Pocillopora damicornis-high:Montipora capitata        -0.11804932 0.0000511
+high:Pocillopora damicornis-ambient:Pocillopora damicornis -0.00412247 0.0411554
+
+Call:
+   aov(formula = (Methylation^0.25) ~ Treatment * Species, data = data)
+
+Terms:
+                 Treatment    Species Treatment:Species  Residuals
+Sum of Squares  0.01868682 0.05524422        0.03460609 0.22493644
+Deg. of Freedom          1          1                 1         27
+
+Residual standard error: 0.0912742
+Estimated effects may be unbalanced
+Analysis of Variance Table
+
+Response: (Methylation^0.25)
+                  Df   Sum Sq  Mean Sq F value  Pr(>F)  
+Treatment          1 0.018687 0.018687  2.2431 0.14582  
+Species            1 0.055244 0.055244  6.6312 0.01582 *
+Treatment:Species  1 0.034606 0.034606  4.1539 0.05144 .
+Residuals         27 0.224936 0.008331                  
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+  Tukey multiple comparisons of means
+    95% family-wise confidence level
+
+Fit: aov(formula = (Methylation^0.25) ~ Treatment * Species, data = data)
+
+$Treatment
+                   diff         lwr       upr     p adj
+High-Ambient 0.04912956 -0.01817813 0.1164373 0.1458166
+
+$Species
+                                                diff        lwr        upr     p adj
+Pocillopora damicornis-Montipora capitata -0.0844262 -0.1517339 -0.0171185 0.0158713
+
+$`Treatment:Species`
+                                                                  diff          lwr
+High:Montipora capitata-Ambient:Montipora capitata         -0.01267970 -0.137568529
+Ambient:Pocillopora damicornis-Ambient:Montipora capitata  -0.15376289 -0.283035114
+High:Pocillopora damicornis-Ambient:Montipora capitata     -0.03257321 -0.157462036
+Ambient:Pocillopora damicornis-High:Montipora capitata     -0.14108319 -0.270355414
+High:Pocillopora damicornis-High:Montipora capitata        -0.01989351 -0.144782337
+High:Pocillopora damicornis-Ambient:Pocillopora damicornis  0.12118969 -0.008082533
+                                                                   upr     p adj
+High:Montipora capitata-Ambient:Montipora capitata          0.11220913 0.9923343
+Ambient:Pocillopora damicornis-Ambient:Montipora capitata  -0.02449067 0.0151824
+High:Pocillopora damicornis-Ambient:Montipora capitata      0.09231562 0.8907681
+Ambient:Pocillopora damicornis-High:Montipora capitata     -0.01181097 0.0285352
+High:Pocillopora damicornis-High:Montipora capitata         0.10499532 0.9717334
+High:Pocillopora damicornis-Ambient:Pocillopora damicornis  0.25046191 0.0721088
+
