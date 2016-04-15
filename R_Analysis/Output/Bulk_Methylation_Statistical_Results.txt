@@ -4,55 +4,98 @@
 1 P. damicornis 0.2907977 < 0.01
     model        Q2   pval
 1 Species 0.7450837 < 0.01
-Call:
-   aov(formula = log10(Growth.Rate) ~ Treatment + Species + Treatment * 
-    Species, data = growth.rate)
+Linear mixed-effects model fit by REML
+ Data: na.omit(G.RM) 
+        AIC       BIC   logLik
+  -1190.358 -1122.059 614.1791
 
-Terms:
-                Treatment  Species Treatment:Species Residuals
-Sum of Squares   0.382020 1.376171          0.010070  3.205577
-Deg. of Freedom         1        1                 1        89
+Random effects:
+ Formula: ~variable | Subject
+ Structure: General positive-definite, Log-Cholesky parametrization
+              StdDev     Corr         
+(Intercept)   0.02419435 (Intr) vrblW4
+variableWeek4 0.02137146 -0.311       
+variableWeek6 0.02321318 -0.494  0.673
+Residual      0.01010391              
 
-Residual standard error: 0.1897833
-Estimated effects may be unbalanced
-Analysis of Variance Table
+Fixed effects: (sqrt(value + 1)) ~ variable * Treatment * Species 
+                                                               Value   Std.Error  DF   t-value p-value
+(Intercept)                                                1.0504658 0.005589990 179 187.91910  0.0000
+variableWeek4                                              0.0353580 0.005481030 179   6.45099  0.0000
+variableWeek6                                              0.0289142 0.005811546 179   4.97530  0.0000
+Treatmenthigh                                             -0.0056886 0.007905439  90  -0.71958  0.4736
+SpeciesPocillopora damicornis                             -0.0142529 0.007664608  90  -1.85957  0.0662
+variableWeek4:Treatmenthigh                               -0.0161342 0.007751347 179  -2.08146  0.0388
+variableWeek6:Treatmenthigh                                0.0006194 0.008268988 179   0.07491  0.9404
+variableWeek4:SpeciesPocillopora damicornis               -0.0226166 0.007515210 179  -3.00945  0.0030
+variableWeek6:SpeciesPocillopora damicornis               -0.0154912 0.007968391 179  -1.94409  0.0535
+Treatmenthigh:SpeciesPocillopora damicornis               -0.0026499 0.010839392  90  -0.24447  0.8074
+variableWeek4:Treatmenthigh:SpeciesPocillopora damicornis  0.0088622 0.010628112 179   0.83385  0.4055
+variableWeek6:Treatmenthigh:SpeciesPocillopora damicornis -0.0080340 0.011305686 179  -0.71062  0.4782
+ Correlation: 
+                                                          (Intr) vrblW4 vrblW6 Trtmnt SpcsPd vrW4:T vrW6:T vW4:Sd vW6:Sd
+variableWeek4                                             -0.390                                                        
+variableWeek6                                             -0.531  0.622                                                 
+Treatmenthigh                                             -0.707  0.276  0.376                                          
+SpeciesPocillopora damicornis                             -0.729  0.284  0.388  0.516                                   
+variableWeek4:Treatmenthigh                                0.276 -0.707 -0.440 -0.390 -0.201                            
+variableWeek6:Treatmenthigh                                0.373 -0.437 -0.703 -0.528 -0.272  0.618                     
+variableWeek4:SpeciesPocillopora damicornis                0.284 -0.729 -0.454 -0.201 -0.390  0.516  0.319              
+variableWeek6:SpeciesPocillopora damicornis                0.388 -0.454 -0.729 -0.274 -0.531  0.321  0.513  0.622       
+Treatmenthigh:SpeciesPocillopora damicornis                0.516 -0.201 -0.274 -0.729 -0.707  0.284  0.385  0.276  0.376
+variableWeek4:Treatmenthigh:SpeciesPocillopora damicornis -0.201  0.516  0.321  0.284  0.276 -0.729 -0.451 -0.707 -0.440
+variableWeek6:Treatmenthigh:SpeciesPocillopora damicornis -0.273  0.320  0.514  0.386  0.375 -0.452 -0.731 -0.438 -0.705
+                                                          Tr:SPd vW4:Td
+variableWeek4                                                          
+variableWeek6                                                          
+Treatmenthigh                                                          
+SpeciesPocillopora damicornis                                          
+variableWeek4:Treatmenthigh                                            
+variableWeek6:Treatmenthigh                                            
+variableWeek4:SpeciesPocillopora damicornis                            
+variableWeek6:SpeciesPocillopora damicornis                            
+Treatmenthigh:SpeciesPocillopora damicornis                            
+variableWeek4:Treatmenthigh:SpeciesPocillopora damicornis -0.390       
+variableWeek6:Treatmenthigh:SpeciesPocillopora damicornis -0.530  0.620
 
-Response: log10(Growth.Rate)
-                  Df Sum Sq Mean Sq F value    Pr(>F)    
-Treatment          1 0.3820 0.38202 10.6065  0.001595 ** 
-Species            1 1.3762 1.37617 38.2082 1.878e-08 ***
-Treatment:Species  1 0.0101 0.01007  0.2796  0.598285    
-Residuals         89 3.2056 0.03602                      
----
-Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-  Tukey multiple comparisons of means
-    95% family-wise confidence level
+Standardized Within-Group Residuals:
+        Min          Q1         Med          Q3         Max 
+-2.77666196 -0.19564618 -0.01043218  0.20531305  1.87367161 
 
-Fit: aov(formula = log10(Growth.Rate) ~ Treatment + Species + Treatment * Species, data = growth.rate)
+Number of Observations: 281
+Number of Groups: 94 
+                           numDF denDF   F-value p-value
+(Intercept)                    1   179 211231.78  <.0001
+variable                       2   179     27.23  <.0001
+Treatment                      1    90      4.81  0.0309
+Species                        1    90     32.59  <.0001
+variable:Treatment             2   179      2.67  0.0718
+variable:Species               2   179      7.26  0.0009
+Treatment:Species              1    90      0.34  0.5607
+variable:Treatment:Species     2   179      1.57  0.2106
+Species = Montipora capitata, variable = Week2:
+ contrast          estimate          SE df t.ratio p.value
+ ambient - high 0.005688594 0.007905439 90   0.720  0.4736
 
-$Treatment
-                   diff        lwr         upr     p adj
-high-ambient -0.1281908 -0.2064013 -0.04998033 0.0015955
+Species = Montipora capitata, variable = Week4:
+ contrast          estimate          SE df t.ratio p.value
+ ambient - high 0.021822746 0.008647386 90   2.524  0.0134
 
-$Species
-                                               diff        lwr        upr p adj
-Pocillopora damicornis-Montipora capitata -0.243966 -0.3223944 -0.1655375     0
+Species = Montipora capitata, variable = Week6:
+ contrast          estimate          SE df t.ratio p.value
+ ambient - high 0.005069152 0.007862480 90   0.645  0.5207
 
-$`Treatment:Species`
-                                                                 diff        lwr
-high:Montipora capitata-ambient:Montipora capitata         -0.1029185 -0.2545122
-ambient:Pocillopora damicornis-ambient:Montipora capitata  -0.2233858 -0.3686422
-high:Pocillopora damicornis-ambient:Montipora capitata     -0.3680524 -0.5133088
-ambient:Pocillopora damicornis-high:Montipora capitata     -0.1204672 -0.2675518
-high:Pocillopora damicornis-high:Montipora capitata        -0.2651339 -0.4122184
-high:Pocillopora damicornis-ambient:Pocillopora damicornis -0.1446666 -0.2852108
-                                                                   upr     p adj
-high:Montipora capitata-ambient:Montipora capitata          0.04867511 0.2909103
-ambient:Pocillopora damicornis-ambient:Montipora capitata  -0.07812936 0.0006766
-high:Pocillopora damicornis-ambient:Montipora capitata     -0.22279598 0.0000000
-ambient:Pocillopora damicornis-high:Montipora capitata      0.02661730 0.1471993
-high:Pocillopora damicornis-high:Montipora capitata        -0.11804932 0.0000511
-high:Pocillopora damicornis-ambient:Pocillopora damicornis -0.00412247 0.0411554
+Species = Pocillopora damicornis, variable = Week2:
+ contrast          estimate          SE df t.ratio p.value
+ ambient - high 0.008338496 0.007415959 90   1.124  0.2638
+
+Species = Pocillopora damicornis, variable = Week4:
+ contrast          estimate          SE df t.ratio p.value
+ ambient - high 0.015610417 0.008111968 90   1.924  0.0575
+
+Species = Pocillopora damicornis, variable = Week6:
+ contrast          estimate          SE df t.ratio p.value
+ ambient - high 0.015753063 0.007326097 90   2.150  0.0342
 
 Call:
    aov(formula = (Methylation^0.25) ~ Treatment * Species, data = data)
@@ -88,18 +131,17 @@ $Species
 Pocillopora damicornis-Montipora capitata -0.0844262 -0.1517339 -0.0171185 0.0158713
 
 $`Treatment:Species`
-                                                                  diff          lwr
-High:Montipora capitata-Ambient:Montipora capitata         -0.01267970 -0.137568529
-Ambient:Pocillopora damicornis-Ambient:Montipora capitata  -0.15376289 -0.283035114
-High:Pocillopora damicornis-Ambient:Montipora capitata     -0.03257321 -0.157462036
-Ambient:Pocillopora damicornis-High:Montipora capitata     -0.14108319 -0.270355414
-High:Pocillopora damicornis-High:Montipora capitata        -0.01989351 -0.144782337
-High:Pocillopora damicornis-Ambient:Pocillopora damicornis  0.12118969 -0.008082533
-                                                                   upr     p adj
-High:Montipora capitata-Ambient:Montipora capitata          0.11220913 0.9923343
-Ambient:Pocillopora damicornis-Ambient:Montipora capitata  -0.02449067 0.0151824
-High:Pocillopora damicornis-Ambient:Montipora capitata      0.09231562 0.8907681
-Ambient:Pocillopora damicornis-High:Montipora capitata     -0.01181097 0.0285352
-High:Pocillopora damicornis-High:Montipora capitata         0.10499532 0.9717334
-High:Pocillopora damicornis-Ambient:Pocillopora damicornis  0.25046191 0.0721088
+                                                                  diff          lwr         upr     p adj
+High:Montipora capitata-Ambient:Montipora capitata         -0.01267970 -0.137568529  0.11220913 0.9923343
+Ambient:Pocillopora damicornis-Ambient:Montipora capitata  -0.15376289 -0.283035114 -0.02449067 0.0151824
+High:Pocillopora damicornis-Ambient:Montipora capitata     -0.03257321 -0.157462036  0.09231562 0.8907681
+Ambient:Pocillopora damicornis-High:Montipora capitata     -0.14108319 -0.270355414 -0.01181097 0.0285352
+High:Pocillopora damicornis-High:Montipora capitata        -0.01989351 -0.144782337  0.10499532 0.9717334
+High:Pocillopora damicornis-Ambient:Pocillopora damicornis  0.12118969 -0.008082533  0.25046191 0.0721088
+
+
+	Kruskal-Wallis rank sum test
+
+data:  RSDdf.omit$value and RSDdf.omit$X2
+Kruskal-Wallis chi-squared = 5.3923, df = 3, p-value = 0.1452
 

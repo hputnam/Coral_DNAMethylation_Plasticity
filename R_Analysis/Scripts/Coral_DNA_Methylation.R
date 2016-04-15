@@ -1,6 +1,6 @@
 ##Examination of DNA Methylation and Phenotypic Plasticity in Corals
 #Data from Putnam NSF (NSF OCE PRF-1323822) and EPSCOR Y5 (NSF EPS-0903833)
-#last modified 20151021
+#last modified 20160130 
 #See Readme file for details
 
 rm(list=ls()) # removes all prior objects
@@ -14,13 +14,17 @@ library("reshape") #data shaping
 library("plyr") #splitting, applying, and combining data
 library("seacarb") #seawater carbonate chemistry
 library("vegan") #calculating distance matrices
+library("nlme") #mixed model, repeated measures ANOVA
+library("lsmeans") #mixed model posthoc
+library("multcompView") #mixed model posthoc contrasts
 library("MetabolAnalyze") #scaling function
-source('/Users/hputnam/Publications/In_Prep/Primary/Bulk_Methylation/Coral_DNAMethylation_Plasticity/R_Analysis/Scripts/opls.R') #OPLS DA analysis script by Paul Anderson used in Sogin et al 2014 (http://birg.cs.cofc.edu/index.php/O-PLS)
+source('/Users/hputnam/Publications/In_Review/Bulk_Methylation/Coral_DNAMethylation_Plasticity/R_Analysis/Scripts/opls.R') #OPLS DA analysis script by Paul Anderson used in Sogin et al 2014 (http://birg.cs.cofc.edu/index.php/O-PLS)
 library("pracma") #OPLS DA analysis requirements
 library("caret") #OPLS DA analysis requirements
 require("gridExtra") #Arrange Plots for output
 
 #Required Data files
+#BM_Light_Calibration_Data.csv
 #BM_Acclimation.csv
 #BM_Field_Temp.csv
 #BM_Tank_Temp.csv
@@ -36,17 +40,28 @@ require("gridExtra") #Arrange Plots for output
 
 
 #############################################################
-setwd("/Users/hputnam/Publications/In_Prep/Primary/Bulk_Methylation/Coral_DNAMethylation_Plasticity/R_Analysis/Data") #set working directory
-
+setwd("/Users/hputnam/Publications/In_Review/Bulk_Methylation/Coral_DNAMethylation_Plasticity/R_Analysis/Data") #set working directory
+mainDir<-'/Users/hputnam/Publications/In_Review/Bulk_Methylation/Coral_DNAMethylation_Plasticity/R_Analysis/'
 
 #------------------------------------------------
+#Light Calibration
+Cal.L.data <- read.csv("BM_Light_Calibration_Data.csv", header=TRUE, sep=",", na.strings="NA") #load data with a header, separated by commas, with NA as NA
+Cal.L.data$Licor.quanta <- (Cal.L.data$Licor.mol.m2*10^6)/(15*60) #convert 15 min integrated data to instantaneous µmol m-2 s-1
+Cal.L.data$Tank3.quanta <- Cal.L.data$Tank3/(15*60) #convert 15 min integrated data to instantaneous µmol m-2 s-1
+Cal.L.data$Tank4.quanta <- Cal.L.data$Tank4/(15*60) #convert 15 min integrated data to instantaneous µmol m-2 s-1
+Cal.L.data$Tank5.quanta <- Cal.L.data$Tank5/(15*60) #convert 15 min integrated data to instantaneous µmol m-2 s-1
+
+T3.lm <- coef(lm(Licor.quanta ~ Tank3.quanta, data=Cal.L.data))
+T4.lm <- coef(lm(Tank4.quanta ~ Licor.quanta, data=Cal.L.data))
+T5.lm <- coef(lm(Tank5.quanta ~ Licor.quanta, data=Cal.L.data))
+
 ##ACCLIMATION LIGHT AND TEMPERATURE ANALYSIS
 #Data from period that corals were held in tank prior to experimental conditions
 #load tank acclimation light and temp data
 Acclim.data <- read.csv("BM_Acclimation.csv", header=TRUE, sep=",", na.strings="NA") #load data with a header, separated by commas, with NA as NA
 
-light.eq <-Acclim.data$Tank3.Light #Assign light column in dataframe
-light <-(light.eq+48.339)/23.674 #Apply the cross calibration of the odyssey light to Licor cosine sensor standard 192SA cosine sensor
+light <-(Acclim.data$Tank3.Light)/(15*60) #Assign light column in dataframe and convert to units of µmol m-2 s-1
+light <-(light*T3.lm[2])+T3.lm[1] #Apply the cross calibration of the odyssey light to Licor cosine sensor standard 192SA cosine sensor
 
 temp.eq <-Acclim.data$Tank3.Temp #Assign temperature column in dataframe
 temp <-(temp.eq+0.4518)/1.0208 #Apply the cross calibration of temperature to standard logger #1
@@ -182,9 +197,13 @@ tank.temp <- tank.tempdata[, 2:3] #subset the data to tank number and temperatur
 tank.temp <- melt(tank.temp,  na.rm=TRUE) #rearrange the data in long format removing NA or missing data
 colnames(tank.temp) <- c("Tank.Number", "Tank.Temperature") #rename the data columns
 
-mean.tank.temp <-ddply(tank.temp, .(Tank.Number), summarize, #For each subset of a data frame, apply function then combine results into a data frame.
-                  mean = (mean(Tank.Temperature)),       #take the average of the temp column summarized by Tank number
-                  sem = (sd(Tank.Temperature)/sqrt(length(tank.temp)))) #calculate the SEM as the sd/sqrt of the count or data length
+mean.tank.temp <- ddply(tank.temp, .(Tank.Number), summarize, #For each subset of a data frame, apply function then combine results into a data frame.
+                   N=length(na.omit(Tank.Temperature)), # the sample size of the temp column summarized by Tank number
+                   mean = mean(Tank.Temperature), # the average of the temp column summarized by Tank number
+                   sd = sd(Tank.Temperature), # the standard devisaiton of the temp column summarized by Tank number
+                   sem = sd(Tank.Temperature)/sqrt(N)) #calculate the SEM as the sd/sqrt of the count or data length
+
+
 mean.tank.temp # display mean and sem temp levels
 sem.tank.temp <-transform(mean.tank.temp, lower=mean-sem, upper=mean+sem) # add the upper and lower SEM values to the dataframe
 sem.tank.temp #display mean and sem temp levels with lower and upper values for each tank
@@ -207,9 +226,8 @@ Fig5 #View figure
 
 tanks.mean <- mean(tank.temp$Tank.Temperature) #Calculate the grand average of both tanks
 tanks.mean #View data
-tanks.se <- sd(tank.temp$Tank.Temperature)/sqrt(length(tank.temp$Tank.Temperature)) #Calculate the overal standard error of both tanks
+tanks.se <- sd(tank.temp$Tank.Temperature)/sqrt(length(na.omit(tank.temp$Tank.Temperature))) #Calculate the overal standard error of both tanks
 tanks.se #View data
-
 
 #Plotting diurnal cycles
 tank.time <- format(as.POSIXct(mydate.tanks) ,format = "%H:%M") #Format time into only hours and minutes
@@ -250,20 +268,15 @@ Fig6 #View figure
 
 #load light data
 tank.light.data <- read.csv("BM_Tank_light.csv", header=TRUE, sep=",", na.strings="NA") #load data with a header, separated by commas, with NA as NA
+tank.light.data[tank.light.data==0] <- NA
 mydate.light <- strptime(tank.light.data$Date.Time, format="%m/%d/%y %H:%M") #convert date format to characters
-
-Tank4 <-(tank.light.data$Tank4-63.099)/19.652 #Apply the cross calibration of the odyssey light to Licor cosine sensor standard 192SA cosine sensor
-Tank5 <-(tank.light.data$Tank5-49.729)/19.54 #Apply the cross calibration of the odyssey light to Licor cosine sensor standard 192SA cosine sensor
-
-tank.light.data <-data.frame(mydate.light, Tank4, Tank5) #make a dataframe of light and time
-colnames(tank.light.data) <- c("Date.Time", "Tank4", "Tank5") #Rename columns to describe contents
-
-Tank4.light.N <- sum(!is.na(tank.light.data$Tank4)) #Count sample size
-Tank5.light.N <- sum(!is.na(tank.light.data$Tank5)) #Count sample size
+tank.light.data$Tank4.quanta <- (tank.light.data$Tank4*T4.lm[2])+T4.lm[1] #Apply the cross calibration of the odyssey light to Licor cosine sensor standard 192SA cosine sensor
+tank.light.data$Tank5.quanta <-(tank.light.data$Tank5*T5.lm[2])+T5.lm[1] #Apply the cross calibration of the odyssey light to Licor cosine sensor standard 192SA cosine sensor
+tank.light.data$Date.Time <-mydate.light #make a dataframe of light and time
 
 Fig7 <- ggplot(tank.light.data, aes(Date.Time)) + #plot tank light data
-  geom_line(aes(y = Tank4, colour="Ambient")) + #plot light data as a line on the Y axis with date as the X axis 
-  geom_line(aes(y = Tank5, colour="High")) + #plot light data as a line on the Y axis with date as the X axis for additional treatment
+  geom_line(aes(y = Tank4.quanta, colour="Ambient")) + #plot light data as a line on the Y axis with date as the X axis 
+  geom_line(aes(y = Tank5.quanta, colour="High")) + #plot light data as a line on the Y axis with date as the X axis for additional treatment
   scale_colour_manual("Treatment", values = c("blue","red")) + #color the treatment groups differently
   xlab("Date") + #Label the X Axis
   ylab(bquote('Irradiance ('*mu~ 'mol' ~photons ~ m^-2~s^-1*')')) + #Label the Y Axis
@@ -278,13 +291,16 @@ Fig7 <- ggplot(tank.light.data, aes(Date.Time)) + #plot tank light data
         legend.key = element_blank()) #Set plot legend key
 Fig7 #View figure
 
-tank.light <- tank.light.data[, 2:3] #subset the data to tank number and light data
+tank.light <- tank.light.data[, 4:5] #subset the data to tank number and light data
 tank.light  <- melt(tank.light ,  na.rm=TRUE) #rearrange the data in long format removing NA or missing data
 colnames(tank.light ) <- c("Tank.Number", "Tank.Light") #rename the data columns
 
 mean.tank.light <-ddply(tank.light, .(Tank.Number), summarize, #For each subset of a data frame, apply function then combine results into a data frame.
-                       mean = (mean(Tank.Light)),       #take the average of the light column summarized by Tank number
-                       sem = (sd(Tank.Light)/sqrt(length(tank.light)))) #calculate the SEM as the sd/sqrt of the count or data length
+                        N=length(na.omit(Tank.Light)), # the sample size of the light column summarized by Tank number
+                        mean = (mean(Tank.Light)),       #take the average of the light column summarized by Tank number
+                        sd = sd(Tank.Light), # the standard deviation of the temp column summarized by Tank number
+                        sem = (sd(Tank.Light)/sqrt(length(tank.light)))) #calculate the SEM as the sd/sqrt of the count or data length
+
 mean.tank.light # display mean and sem temp levels
 mean.tank.light<-transform(mean.tank.light, lower=mean-sem, upper=mean+sem) # add the upper and lower SEM values to the dataframe
 mean.tank.light #display mean and sem of light levels with lower and upper values for each tank
@@ -295,7 +311,7 @@ Fig8 <- ggplot(mean.tank.light, aes(x = Tank.Number, y = mean)) + # plot mean li
   geom_errorbar(aes(ymax=upper, ymin=lower), data=mean.tank.light) + # plot mean and sem together
   xlab("Tanks") + #Label the X Axis
   ylab(bquote('Irradiance ('*mu~ 'mol' ~photons ~ m^-2~s^-1*')')) + #Label the Y Axis
-  ggtitle("BM Diurnal Tank Light") + #label the main title
+  ggtitle("BM Average Tank Light") + #label the main title
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
         panel.border = element_blank(), #Set the border
@@ -306,13 +322,13 @@ Fig8 #View figure
 
 tanks.light.mean <- mean(tank.light$Tank.Light) #Calculate the grand average of light data
 tanks.light.mean #View data
-tanks.light.se <- sd(tank.light$Tank.Light)/(sqrt(length(tank.temp$Tank.Light))) #Calculate the overall standard error of the light data
+tanks.light.se <- sd(tank.light$Tank.Light)/sqrt(length(na.omit(tank.light$Tank.Light))) #Calculate the overall standard error of the light data
 tanks.light.se #View data
 
 #Plotting diurnal cycles
 tank.time <- format(as.POSIXct(mydate.light) ,format = "%H:%M") #set time to hours and minutes
 tank.lights <- cbind(tank.light.data, tank.time) #Combine time and light data
-colnames(tank.lights) <- c("Date", "Tank4", "Tank5", "Time") #Rename columns to describe contents
+colnames(tank.lights) <- c("Date", "Tank4", "Tank5", "Tank4.quanta", "Tank5.quanta", "Time") #Rename columns to describe contents
 tank.lights #View data
 
 quarterly.tank.light.mean4 <- aggregate(Tank4 ~ Time, data=tank.lights, mean, na.rm=TRUE) #calculate mean of light for every 15 min interval
@@ -545,7 +561,7 @@ Fig12 #View figure
 
 #Need to load data to make conversion equations for pH from mV to total scale using tris standard
 
-path <-("/Users/hputnam/Publications/In_Prep/Primary/Bulk_Methylation/Coral_DNA_Methylation/R_Analysis/Data/pH_Calibration_Files/")
+path <-("/Users/hputnam/Publications/In_Review/Bulk_Methylation/Coral_DNA_Methylation/R_Analysis/Data/pH_Calibration_Files/")
 
 #list all the file names in the folder to get only get the csv files
 file.names<-list.files(path = path, pattern = "csv$")
@@ -588,8 +604,9 @@ colnames(carb.ouptput) <- c("Date",  "Tank",  "Treatment",	"flag",	"Salinity",	"
 
 carbo.melted <- melt(carb.ouptput) #reshape the dataframe to more easily summarize all output parameters
 mean.carb.output <-ddply(carbo.melted, .(Treatment, variable), summarize, #For each subset of a data frame, apply function then combine results into a data frame.
+                       N = length(na.omit(value)),
                        mean = (mean(value)),       #take the average of the parameters (variables) summarized by treatments
-                       sem = (sd(value)/sqrt(length(carbo.melted)))) #calculate the SEM as the sd/sqrt of the count or data length
+                       sem = (sd(value)/sqrt(N))) #calculate the SEM as the sd/sqrt of the count or data length
 mean.carb.output # display mean and sem 
 mean.carb.output <- mean.carb.output[with(mean.carb.output, order(variable)), ] #order the data by the variables
 mean.carb.output <- mean.carb.output[-c(1:4,9,10,29,30), ] #remove non-numeric parameters extra
@@ -599,7 +616,7 @@ write.table (mean.carb.output, "Seawater_chemistry_table_Output.csv", sep=",", r
 #------------------------------------------------
 #METABOLOMIC ANALYSIS
 
-#load data after truncation from 0.5-10 and removal of water peak (4.73959- 4.93955 ppm)
+#loaded data after truncation from 0.5-10 and removal of water peak (4.73959- 4.93955 ppm)
 metabo.data <- read.csv("BM_NMR_Data_0.04binned_truncated_nowater.csv", header=TRUE, sep=",", na.strings="NA") #load data with a header, separated by commas, with NA as NA
 
 #loadsample info
@@ -613,7 +630,7 @@ NMRData.norm[NMRData.norm<0]<-0 #Assign negative values to 0 value
 NMRData.scale <- scaling(NMRData.norm, type="pareto") #scale the data using pareto scaling to give more weight to medium features without inflating the baseline noise, the calculate is done by dividing each variable by the square root of its SD
 
 #Mean center the data
-NMRData.scale <- scale(NMRData.scale, center=TRUE, scale=FALSE) #scale the data about the mean. This calculation is done by subtracting the grand mean from each individual data point
+NMRData.scale <- scale(NMRData.scale, center=TRUE, scale=FALSE) #center the data about the mean. This calculation is done by subtracting the grand mean from each individual data point
 
 #calculate similarity matrix of euclidean distance
 dist.euc <- vegdist(NMRData.scale, method = "euclidean", binary=FALSE, diag=FALSE, upper=FALSE, na.rm = FALSE) #calculates euclidean distance on the transformed data matrix
@@ -622,7 +639,7 @@ dist.euc <- vegdist(NMRData.scale, method = "euclidean", binary=FALSE, diag=FALS
 pca.res <- prcomp(dist.euc, retx=TRUE)
 summary(pca.res)
 biplot(pca.res)
-Y <- metabo.info$Treatment #SELECTS FOR GROUPING
+Y <- metabo.info$Treatment # assign groupings
 ordiellipse(pca.res, group=rep(c(1), c(length(Y))), conf=0.99, kind='sd', draw='lines')  
 
 #remove outliers identified outside 99%cl
@@ -659,18 +676,53 @@ PCA.plot <- ggplot(scores, aes(x = PC1, y = PC2, shape=metabo.Species, col=metab
   theme(panel.border = element_rect(fill=NA, size = 1, colour = "black")) #Set the border
 PCA.plot
 
-#OPLS Analysis of All Data
+#OPLS Analysis of Species Data
 ALL.X<-as.matrix(cleaned.data) #Identify Data
 class(ALL.X)<-'numeric' #changes class data to numeric 
 ALL.Y<-as.matrix(as.numeric(as.factor(as.vector(cleaned.info$Species)))) #Select the grouping for model testing
 ALL.ulabels <- unique(as.vector(cleaned.info$Species)) #Identify the labels for the groupings
 set.seed(10) #sets the value on the uniform random-number generator so that the analysis can be reproduced every time
 ALL.resultsALL<-n.group.opls(ALL.X,ALL.Y, num_permutations=100, CV= 10, nIterations=100, min_num_OPLS_fact=1) #run the OPLS DA model (Anderson)
-ALL.Q2<-ALL.resultsALL$Q2 #GIVES Q2 VALUE
-ALL.pval<-ALL.resultsALL$helper.results$pvalue #GIVES P-VALUE FOR MODEL 
-ALL.modelALL <- ALL.resultsALL$helper.results$model
-ALL.OPLSResults<-data.frame(model=c('Species'), Q2=c(ALL.Q2), pval=c(ALL.pval))
-ALL.OPLSResults
+ALL.Q2<-ALL.resultsALL$Q2 #identify Q2 Values
+ALL.pval<-ALL.resultsALL$helper.results$pvalue #identify pvalue for the model
+ALL.modelALL <- ALL.resultsALL$helper.results$model #identify model results
+ALL.OPLSResults<-data.frame(model=c('Species'), Q2=c(ALL.Q2), pval=c(ALL.pval)) #combine model, Q2 and p value
+ALL.OPLSResults #view results
+
+#determine significant features contributing to species separation in OPLS analysis
+bins <- colnames(ALL.X) #list all bin names
+num_permutations <- 500 #number of permutations for test of significant features
+talpha <- 0.05 #significance value for test of significant features
+inside_num_permutations = 100 #"minimum number of permutations"he smaller number of permutations used to efficiently rule out insignificant features. Should be less than num_permutations. (Anderson OPLS-DA)"
+inside_talpha = 0.15 # "corresponding  test  alpha  for  ruling  out  loadings  that  are  not  close  to  being significant. This is purely for efficient calculations.(Anderson OPLS-DA)"
+set.seed(30) #set seed for repeatability
+ALL.sig_features_results <- determine_significant_features(ALL.X,ALL.Y, ALL.modelALL,num_permutations,talpha,inside_num_permutations,inside_talpha) #determine significant features contributing to OPLS-DA separation
+ALL.sig_metabolites<- bins[ALL.sig_features_results$sig_inxs] #identify significant features from analysis results
+
+#calculating percent change of bins between species
+MC <-colMeans(subset(cleaned.data, cleaned.info$Species=='Montipora capitata')) #Select only the Montipora data from the dataset from which outliers have been removed.
+PD <-colMeans(subset(cleaned.data, cleaned.info$Species=='Pocillopora damicornis')) #Select only the Montipora data from the dataset from which outliers have been removed.
+Perch.Sp<-as.data.frame(((MC-PD)/PD)*100) #calculate relative percent change of the bins between species
+
+#loading scores and percent change of SigMetabolites
+ALL.SigMetabolites<-data.frame(metabolite=ALL.sig_metabolites,perchange=Perch.Sp[ALL.sig_metabolites,]) #make a dataframe of sig bins and their relative percent change
+t_loads<-ALL.modelALL$p #identify loading values to the OPLS-DA
+names<-rownames(t_loads) #IDs of the loading values 
+indxs<-which(names %in% ALL.sig_metabolites) #identify index values for all sig bins
+ALL.SigLoads<-data.frame(metabolite=bins,loads=t_loads[bins, ]) #combine bins and loadings
+ALL.SigMetabolites<-data.frame(metabolite=ALL.sig_metabolites,perchange=Perch.Sp[ALL.sig_metabolites,]) #combine bins and relative percent change 
+ALL.SigMet<-merge(ALL.SigLoads, ALL.SigMetabolites, by='metabolite') #combine bins, loadings, and relative percent change 
+ALL.SigMet<-ALL.SigMet[order(-abs(ALL.SigMet[,'loads'])),] # order by absolute value of the loadings
+colnames(ALL.SigMet) <- c("Metabolite.Bin", "Loading", "Relative.Percent.Change")
+setwd(file.path(mainDir, 'Output')) #set output destination
+write.csv(ALL.SigMet, 'Table_S1_SigMetabolites_Species_OPLSDA.csv') #write results to file
+
+#Peak Correlation detection for ID in Chenomx
+#Correlate peaks of significant bin with other bins to extract and identify metabolite peaks
+Sig.Sp.Bin <- cleaned.data[,colnames(cleaned.data)%in%ALL.sig_metabolites] #data matrix with only significant bins
+cleaned.data #data matrix of all bins
+Sp.corr <- cor(as.matrix(Sig.Sp.Bin), as.matrix(cleaned.data)) #correlate bins contributing to separation with all bins
+barplot(Sp.corr[1,]) #plot first row
 
 #visualize
 t.opls <- as.numeric(as.vector(ALL.modelALL$t)) #assign numeric t values from OPLS results
@@ -682,8 +734,8 @@ Fig13 <- ggplot(All.metabo.data, aes(t, t.ortho)) +
   geom_point(aes(x=t, y=t.ortho, colour=Species, shape=Species)) +
   scale_colour_manual("Species", values = c("black","gray")) + #Set colors for Species
   scale_shape_manual(values = c(17,19)) + #Set shape for Species
-  xlim(-1600, 1600) +
-  ylim(-2500, 2500) +
+  xlim(-1600, 1600) + #set x axis limits
+  ylim(-2500, 2500) + #set y axis limits
   ggtitle("A All Species") + #Label graph
   xlab("t") + #Label the X Axis
   ylab("t-Orthogonal") + #Label the Y Axis
@@ -704,8 +756,8 @@ Fig13  #View figure
 MC.data <-subset(cleaned.all.data, cleaned.all.info$Species=='Montipora capitata') #Select only the Montipora data from the dataset from which outliers have been removed.
 MC.info<-subset(cleaned.all.info, cleaned.all.info$Species=='Montipora capitata') #Select only the Montipora info
 which(colSums(MC.data) ==0) #check to see if any bins (columns) are present in the whole analysis, but not in Montipora only
-MC.data <- MC.data [, colSums(MC.data  != 0) > 0]
-which(colSums(MC.data) ==0)
+MC.data <- MC.data [, colSums(MC.data  != 0) > 0] #remove columns with only 0
+which(colSums(MC.data) ==0) #check again for columns with only 0
 
 #assign treatment from info
 MC.Treatment <- MC.info$Treatment
@@ -718,7 +770,7 @@ MC.NMRData.scale <- scale(MC.NMRData.scale, center=TRUE, scale=FALSE)
 
 #calculate similarity matrix of euclidean distance
 MC.dist.euc <- vegdist(MC.NMRData.scale, method = "euclidean", binary=FALSE, diag=FALSE, upper=FALSE, na.rm = TRUE) #calculates euclidean distance on the transformed data matrix
-MC.pca.res <- prcomp(MC.dist.euc, retx=TRUE)
+MC.pca.res <- prcomp(MC.dist.euc, retx=TRUE) #run principal components analysis
 summary(MC.pca.res)
 
 #check for outliers
@@ -734,7 +786,7 @@ MC.counts #view the sample size for each Treatment
 
 #calculate similarity matrix of euclidean distance
 MC.dist.euc <- vegdist(cleaned.MC.data, method = "euclidean", binary=FALSE, diag=FALSE, upper=FALSE, na.rm = TRUE) #calculates euclidean distance on the transformed data matrix
-MC.pca.res <- prcomp(MC.dist.euc, retx=TRUE)
+MC.pca.res <- prcomp(MC.dist.euc, retx=TRUE) #run principal components analysis
 summary(MC.pca.res)
 
 #Double check for outliers
@@ -754,17 +806,46 @@ MC.PCA.plot <- ggplot(MC.scores, aes(x = PC1, y = PC2, shape=cleaned.MC.Treat , 
 MC.PCA.plot
 
 #Montipora OPLS Data
-MC.X<-as.matrix(cleaned.MC.data) #SELECT DATA -- USER INPUT
+MC.X<-as.matrix(cleaned.MC.data) #select data for analysis
 class(MC.X)<-'numeric' #changes class data to numeric 
-MC.Y<-as.matrix(as.numeric(as.factor(as.vector(cleaned.MC.info$Treatment)))) #SELECT GROUPING -- USER INPUT BY CHANGING COLUMN USED
-MC.ulabels <- unique(as.vector(cleaned.MC.info$Treatment)) #PICK LABELS 
+MC.Y<-as.matrix(as.numeric(as.factor(as.vector(cleaned.MC.info$Treatment)))) #select the grouping factor
+MC.ulabels <- unique(as.vector(cleaned.MC.info$Treatment)) #identify labels
 set.seed(10) #sets the value on the uniform random-number generator so that the analysis can be reproduced every time
-MC.resultsALL<-n.group.opls(MC.X,MC.Y, num_permutations=100, CV= 10, nIterations=100, min_num_OPLS_fact=1) #RUNS MODEL
-MC.Q2<-MC.resultsALL$Q2 #GIVES Q2 VALUE
-MC.pval<-MC.resultsALL$helper.results$pvalue #GIVES P-VALUE FOR MODEL 
-MC.modelALL <- MC.resultsALL$helper.results$model #lists results
-MC.OPLSResults<-data.frame(model=c('M. capitata'), Q2=c(MC.Q2), pval=c(MC.pval)) #lists Q2 and p
-MC.OPLSResults
+MC.resultsALL<-n.group.opls(MC.X,MC.Y, num_permutations=100, CV= 10, nIterations=100, min_num_OPLS_fact=1) #runs OPLS-DA model (Anderson)
+MC.Q2<-MC.resultsALL$Q2 #identify Q2 Values
+MC.pval<-MC.resultsALL$helper.results$pvalue #identify pvalue for the model
+MC.modelALL <- MC.resultsALL$helper.results$model #identify model results
+MC.OPLSResults<-data.frame(model=c('M. capitata'), Q2=c(MC.Q2), pval=c(MC.pval)) #combine model, Q2 and p value
+MC.OPLSResults #view results
+
+#determine significant features contributing to species separation in OPLS analysis
+MC.bins <- colnames(MC.X) #list all bin names
+MC.sig_features_results <- determine_significant_features(MC.X,MC.Y, MC.modelALL,num_permutations,talpha,inside_num_permutations,inside_talpha) #determine significant features contributing to OPLS-DA separation
+MC.sig_metabolites<- MC.bins[MC.sig_features_results$sig_inxs] #identify significant features from analysis results
+
+#calculating percent change of bins between species
+MC.High <-colMeans(subset(cleaned.MC.data, cleaned.MC.info$Treatment=='High')) #Select only the Montipora data from the dataset from which outliers have been removed.
+MC.Amb <-colMeans(subset(cleaned.MC.data, cleaned.MC.info$Treatment=='Ambient')) #Select only the Montipora data from the dataset from which outliers have been removed.
+Perch.MC<-as.data.frame(((MC.High-MC.Amb)/MC.Amb)*100) #calculate relative percent change of the bins between treatment
+
+#loading scores and percent change of SigMetabolites
+MC.SigMetabolites<-data.frame(metabolite=MC.sig_metabolites,perchange=Perch.MC[MC.sig_metabolites,]) #make a dataframe of sig bins and their relative percent change
+MC.t_loads<-MC.modelALL$p #identify sig values to the OPLS-DA
+MC.names<-rownames(MC.t_loads) #IDs of the loading values 
+MC.indxs<-which(names %in% MC.sig_metabolites) #identify index values for all sig bins
+MC.SigLoads<-data.frame(metabolite=MC.bins,loads=MC.t_loads[MC.bins, ]) #combine bins and loadings
+MC.SigMetabolites<-data.frame(metabolite=MC.sig_metabolites,perchange=Perch.MC[MC.sig_metabolites,]) #combine bins and relative percent change 
+MC.SigMet<-merge(MC.SigLoads, MC.SigMetabolites, by='metabolite') #combine bins, loadings, and relative percent change 
+MC.SigMet<-MC.SigMet[order(-abs(MC.SigMet[,'loads'])),] #order by absolute value of the loadings
+setwd(file.path(mainDir, 'Output')) #set output destination
+write.csv(MC.SigMet, 'Table_S3_SigMetabolites_Mcapitata_Treatment_OPLSDA.csv') #write results to file
+
+#Peak Correlation detection for ID in Chenomx
+#Correlate peaks of significant bin with other bins to extract and identify metabolite peaks
+Sig.MC.Bin <- cleaned.MC.data[,colnames(cleaned.MC.data)%in% MC.sig_metabolites] #data matrix with only significant bins
+cleaned.MC.data #data matrix of all bins
+MC.corr <- cor(as.matrix(Sig.MC.Bin), as.matrix(cleaned.MC.data))
+barplot(MC.corr[1,])
 
 #visualize
 MC.t.opls <- as.numeric(as.vector(MC.modelALL$t)) #assign numeric t values from OPLS results
@@ -856,6 +937,35 @@ PD.modelALL <- PD.resultsALL$helper.results$model
 PD.OPLSResults<-data.frame(model=c('P. damicornis'), Q2=c(PD.Q2), pval=c(PD.pval))
 PD.OPLSResults #View Results
 
+#determine significant features contributing to species separation in OPLS analysis
+PD.bins <- colnames(PD.X)
+PD.sig_features_results <- determine_significant_features(PD.X,PD.Y, PD.modelALL,num_permutations,talpha,inside_num_permutations,inside_talpha)
+PD.sig_metabolites<- PD.bins[PD.sig_features_results$sig_inxs]
+
+#calculating percent change of bins between treatments for the cleaned, scaled and centered data
+PD.High <-colMeans(subset(cleaned.PD.data, cleaned.PD.info$Treatment=='High')) #Select only the Montipora data from the dataset from which outliers have been removed.
+PD.Amb <-colMeans(subset(cleaned.PD.data, cleaned.PD.info$Treatment=='Ambient')) #Select only the Montipora data from the dataset from which outliers have been removed.
+Perch.PD<-as.data.frame(((PD.High-PD.Amb)/PD.Amb)*100)
+
+#loading scores and percent change of SigMetabolites
+PD.SigMetabolites<-data.frame(metabolite=PD.sig_metabolites,perchange=Perch.PD[PD.sig_metabolites,])
+PD.t_loads<-PD.modelALL$p
+PD.names<-rownames(PD.t_loads)
+PD.indxs<-which(names %in% PD.sig_metabolites)
+PD.SigLoads<-data.frame(metabolite=PD.bins,loads=PD.t_loads[PD.bins, ])
+PD.SigMetabolites<-data.frame(metabolite=PD.sig_metabolites,perchange=Perch.PD[PD.sig_metabolites,])
+PD.SigMet<-merge(PD.SigLoads, PD.SigMetabolites, by='metabolite')
+PD.SigMet<-PD.SigMet[order(-abs(PD.SigMet[,'loads'])),]
+setwd(file.path(mainDir, 'Output'))
+write.csv(PD.SigMet, 'Table_S2_SigMetabolites_Pdamicornis_Treatment_OPLSDA.csv')
+
+#Peak Correlation detection for ID in Chenomx
+#Correlate peaks of significant bin with other bins to extract and identify metabolite peaks
+Sig.PD.Bin <- cleaned.PD.data[,colnames(cleaned.PD.data)%in% PD.sig_metabolites] #data matrix with only significant bins
+cleaned.PD.data #data matrix of all bins
+PD.corr <- cor(as.matrix(Sig.PD.Bin), as.matrix(cleaned.PD.data))
+barplot(PD.corr[1,])
+
 #visualize
 PD.t.opls <- as.numeric(as.vector(PD.modelALL$t)) #assign numeric t values from OPLS results
 PD.t.ortho.opls <- as.numeric(as.vector(PD.modelALL$t_ortho)) #assign numeric t-orthogonal values from OPLS results
@@ -882,11 +992,76 @@ Fig15 <- ggplot(PD.metabo.data, aes(t, t.ortho)) +
         plot.title=element_text(hjust=0, face="bold.italic")) #Justify the title to the top left and use Bold italics font
 Fig15  #View figure
 
+#Calculate % RSD
+#subset data by species and treatment use NMRData.norm (inout data file with negative values replaced with 0s)
+MC.list <- cleaned.MC.info$Coral.ID #list of clean coral IDs
+PD.list <- cleaned.PD.info$Coral.ID #list of clean coral IDs
+
+MC.high <- subset(NMRData.norm, metabo.info$Coral.ID %in% MC.list & metabo.info$Treatment=='High') #Montipora
+MC.amb <- subset(NMRData.norm, metabo.info$Coral.ID %in% MC.list & metabo.info$Treatment=='Ambient') #Montipora
+PD.high <- subset(NMRData.norm, metabo.info$Coral.ID %in% PD.list & metabo.info$Treatment=='High') #Pocillopora
+PD.amb <- subset(NMRData.norm, metabo.info$Coral.ID %in% PD.list & metabo.info$Treatment=='Ambient') #Pocillopora
+
+#remove columns with no data
+which(colSums(MC.high) ==0) #check to see if any bins (columns) with no data are present 
+MC.high <- MC.high [, colSums(MC.high  != 0) > 0] #remove the coloumns that have zeros
+which(colSums(MC.high) ==0) #check again for any zero columns
+
+which(colSums(MC.amb) ==0) #check to see if any bins (columns) with no data are present 
+MC.amb <- MC.amb [, colSums(MC.amb  != 0) > 0] #remove the coloumns that have zeros
+which(colSums(MC.amb) ==0) #check again for any zero columns
+
+which(colSums(PD.high) ==0) #check to see if any bins (columns) with no data are present 
+PD.high <- PD.high [, colSums(PD.high  != 0) > 0] #remove the coloumns that have zeros
+which(colSums(PD.high) ==0) #check again for any zero columns
+
+which(colSums(PD.amb) ==0) #check to see if any bins (columns) with no data are present 
+PD.amb <- PD.amb [, colSums(PD.amb  != 0) > 0] #remove the coloumns that have zeros
+which(colSums(PD.amb) ==0) #check again for any zero columns
+
+#Calculated RSD BY SPECIES and Treatment:  %RSD = (bin sd / bin mean) * 100
+MC.RSD.high <-(apply(MC.high,2, sd)/colMeans(MC.high)*100) #calculate %RSD
+MC.RSD.amb <-(apply(MC.amb,2, sd)/colMeans(MC.amb)*100) #calculate %RSD
+range(MC.RSD.high) #view range RSD
+range(MC.RSD.amb) #view range RSD
+PD.RSD.high <-(apply(PD.high,2, sd)/colMeans(PD.high)*100) #calculate %RSD
+PD.RSD.amb <-(apply(PD.amb,2, sd)/colMeans(PD.amb)*100) #calculate %RSD
+range(PD.RSD.high) #view range RSD
+range(PD.RSD.amb) #view range RSD
+
+df.m<-melt(cbind(MC.RSD.high, MC.RSD.amb, PD.RSD.high, PD.RSD.amb)) #combines and melts data into long format
+RSDdf.omit<-na.omit(df.m) #removes NA values 
+shapiro.test(RSDdf.omit$value) # checks for normality: non-normal data
+hist(RSDdf.omit$value)
+RSD.result <-kruskal.test(RSDdf.omit$value, RSDdf.omit$X2, p.adj='bonferroni') #performs Kruskal_walis One Way Analysis of Variance 
+RSD.result 
+
+MC.RSD.H.data <- subset(RSDdf.omit, RSDdf.omit$X2=="MC.RSD.high")
+MC.RSD.A.data <- subset(RSDdf.omit, RSDdf.omit$X2=="MC.RSD.amb") 
+MC.RSD.data <- rbind(MC.RSD.H.data,MC.RSD.A.data)
+Names <- c("Ambient", "High", "Ambient", "High")
+Fig.RSD <- ggplot(RSDdf.omit, aes(X2, value)) +
+  geom_boxplot(data=RSDdf.omit, aes(X2, value, fill=X2)) +
+  xlab("Treatment") + #Label the X Axis
+  ylab("% RSD") + #Label the Y Axis
+  ylim(0,500) + #set the y axis limit
+  theme_bw() + #Set the background color
+  scale_fill_manual(values=c("blue", "red","blue", "red")) + #set plot colors
+  theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
+        panel.border = element_blank(), #Set the border
+        panel.grid.major = element_blank(), #Set the major gridlines
+        panel.grid.minor = element_blank(), #Set the minor gridlines
+        plot.background =element_blank(), #Set the plot background
+        legend.position="none") + #remove legend
+  scale_x_discrete(breaks=c("MC.RSD.amb","MC.RSD.high","PD.RSD.amb","PD.RSD.high"), labels=c("M. capitata", "M. capitata", "P. damicornis","P. damicornis"))
+Fig.RSD
+
 #------------------------------------------------
 #Growth Analysis
-
+setwd(file.path(mainDir, 'Data')) #set data path
 #load weight data
-weight <- read.csv("BM_Buoyant_Weight.csv", header=TRUE, sep=",", na.strings="NA") #load data with a header, separated by commas, with NA as NA
+weight <- read.csv("BM_Buoyant_Weight_Repeated.csv", header=TRUE, sep=",", na.strings="NA") #load data with a header, separated by commas, with NA as NA
 
 PD.Arag <- 2.78 #g cm-3, set aragonite density for Pocillopora from literature
 MC.Arag <- 2.03 #g cm-3, set aragonite density for Montipora from literature
@@ -902,138 +1077,169 @@ DenFW0 <- ((-0.000005*Temp0*Temp0)+(0.000007*Temp0)+1.0001) #g cm-3 Calculates d
 DenRef0 <- ((RefDry0*DenFW0)/(RefDry0-RefFW0)) #g cm-3 Equation 4 from Spencer Davies 1989 calculates the density of the reference weight
 DenSW0 <- ((DenRef0*(RefDry0-RefSW0))/(RefDry0))  #g cm-3 Equation 3 from Spencer Davies 1989 using the density of the calcualted reference weight
 
-#TimeFinal date=20140612
-Temp5 <- 26.24 #Temperature of the measurement
-RefDry5 <- 39.110 #weight of solid glass dry reference in air
-RefSW5 <- 21.128 #weight of solid glass reference in seawater
-RefFW5 <- 21.572 #weight of solid glass reference in freshwater
-DenFW5 <- ((-0.000005*Temp5*Temp5)+(0.000007*Temp5)+1.0001) #g cm-3 Calculates density of the freshwater as a function of temperature
-DenRef5 <- ((RefDry5*DenFW5)/(RefDry5-RefFW5)) #g cm-3 Equation 4 from Spencer Davies 1989 calculates the density of the reference weight
-DenSW5 <- ((DenRef5*(RefDry5-RefSW5))/(RefDry5))  #g cm-3 Equation 3 from Spencer Davies 1989 using the density of the calcualted reference weight
+#Week2 date=20140515
+Temp2 <- 25.45 #Temperature of the measurement
+RefDry2 <- 39.111 #weight of solid glass dry reference in air
+RefSW2 <- 21.137 #weight of solid glass reference in seawater
+RefFW2 <- 21.595 #weight of solid glass reference in freshwater
+DenFW2 <- ((-0.000005*Temp2*Temp2)+(0.000007*Temp2)+1.0001) #g cm-3 Calculates density of the freshwater as a function of temperature
+DenRef2 <- ((RefDry2*DenFW2)/(RefDry2-RefFW2)) #g cm-3 Equation 4 from Spencer Davies 1989 calculates the density of the reference weight
+DenSW2 <- ((DenRef2*(RefDry2-RefSW2))/(RefDry2))  #g cm-3 Equation 3 from Spencer Davies 1989 using the density of the calcualted reference weight
 
-days <- 43
+#Week4 date=20140529
+Temp4 <- 25.72 #Temperature of the measurement
+RefDry4 <- 39.112 #weight of solid glass dry reference in air
+RefSW4 <- 21.148 #weight of solid glass reference in seawater
+RefFW4 <- 21.582 #weight of solid glass reference in freshwater
+DenFW4 <- ((-0.000005*Temp4*Temp4)+(0.000007*Temp4)+1.0001) #g cm-3 Calculates density of the freshwater as a function of temperature
+DenRef4 <- ((RefDry4*DenFW4)/(RefDry4-RefFW4)) #g cm-3 Equation 4 from Spencer Davies 1989 calculates the density of the reference weight
+DenSW4 <- ((DenRef4*(RefDry4-RefSW4))/(RefDry4))  #g cm-3 Equation 3 from Spencer Davies 1989 using the density of the calcualted reference weight
+
+#Week6 date=20140612
+Temp6 <- 26.24 #Temperature of the measurement
+RefDry6 <- 39.110 #weight of solid glass dry reference in air
+RefSW6 <- 21.128 #weight of solid glass reference in seawater
+RefFW6 <- 21.572 #weight of solid glass reference in freshwater
+DenFW6 <- ((-0.000005*Temp6*Temp6)+(0.000007*Temp6)+1.0001) #g cm-3 Calculates density of the freshwater as a function of temperature
+DenRef6 <- ((RefDry6*DenFW6)/(RefDry6-RefFW6)) #g cm-3 Equation 4 from Spencer Davies 1989 calculates the density of the reference weight
+DenSW6 <- ((DenRef6*(RefDry6-RefSW6))/(RefDry6))  #g cm-3 Equation 3 from Spencer Davies 1989 using the density of the calcualted reference weight
+
+days <- 14 #number of days between weighings
+
+MC.weight <-subset(weight, weight$Species=='Montipora capitata') #subset MC data to apply MC specific skeletal density
+PD.weight <-subset(weight, weight$Species=='Pocillopora damicornis') #subset MC data to apply MC specific skeletal density
+
+PD.DryWeight1 <- ((PD.weight$Final_01May)/(1-(DenSW0/PD.Arag))) #calculate dry weight Spencer Davies 1989 Eq 4
+PD.DryWeight2 <- ((PD.weight$Initial_15May)/(1-(DenSW2/PD.Arag))) #calculate dry weight Spencer Davies 1989 Eq 4
+PD.DryWeight3 <- ((PD.weight$Final_15May)/(1-(DenSW2/PD.Arag))) #calculate dry weight Spencer Davies 1989 Eq 4
+PD.DryWeight4 <- ((PD.weight$Initial_29May)/(1-(DenSW4/PD.Arag))) #calculate dry weight Spencer Davies 1989 Eq 4
+PD.DryWeight5 <- ((PD.weight$Final_29May)/(1-(DenSW4/PD.Arag))) #calculate dry weight Spencer Davies 1989 Eq 4
+PD.DryWeight6 <- ((PD.weight$Initial_12June)/(1-(DenSW6/PD.Arag))) #calculate dry weight Spencer Davies 1989 Eq 4
+
+PD.G.week2 <- ((PD.DryWeight2-PD.DryWeight1)/(PD.DryWeight1))*100/(days) #calculate growth rate in % growth per day normalized to initial mass
+PD.G.week4 <- ((PD.DryWeight4-PD.DryWeight3)/(PD.DryWeight3))*100/(days) #calculate growth rate in % growth per day normalized to initial mass
+PD.G.week6 <- ((PD.DryWeight6-PD.DryWeight5)/(PD.DryWeight5))*100/(days) #calculate growth rate in % growth per day normalized to initial mass
+
+PD.G.data <- cbind(PD.weight,PD.G.week2,PD.G.week4,PD.G.week6) #combine growth rate data and metadata
+colnames(PD.G.data) <- c("Species",  "Coral.ID",  "Treatment",	"Initial_01May",	"Final_01May",	"Initial_15May",	"Final_15May",	"Initial_29May",	"Final_29May",	"Initial_12June",	"Week2",	"Week4",	"Week6")
 
 #Montipora Dry Weight
 #Subset weights by species
-MC.weight <-subset(weight, weight$Species=='Montipora capitata') 
-PD.weight <-subset(weight, weight$Species=='Pocillopora damicornis') 
+MC.DryWeight1 <- ((MC.weight$Final_01May)/(1-(DenSW0/MC.Arag))) #calculate dry weight Spencer Davies 1989 Eq 4
+MC.DryWeight2 <- ((MC.weight$Initial_15May)/(1-(DenSW2/MC.Arag))) #calculate dry weight Spencer Davies 1989 Eq 4
+MC.DryWeight3 <- ((MC.weight$Final_15May)/(1-(DenSW2/MC.Arag))) #calculate dry weight Spencer Davies 1989 Eq 4
+MC.DryWeight4 <- ((MC.weight$Initial_29May)/(1-(DenSW4/MC.Arag))) #calculate dry weight Spencer Davies 1989 Eq 4
+MC.DryWeight5 <- ((MC.weight$Final_29May)/(1-(DenSW4/MC.Arag))) #calculate dry weight Spencer Davies 1989 Eq 4
+MC.DryWeight6 <- ((MC.weight$Initial_12June)/(1-(DenSW6/MC.Arag))) #calculate dry weight Spencer Davies 1989 Eq 4
 
-MC.dryweight.initial <- ((MC.weight$Initial_01May)/(1-(DenSW0/MC.Arag))) #Calculates the dry weight in grams using Equation 1 from Spencer Davies 1989 calculates the density of the reference weight
-MC.dryweight.final <- ((MC.weight$Initial_12June)/(1-(DenSW5/MC.Arag))) #Calculates the dry weight in grams using Equation 1 from Spencer Davies 1989 calculates the density of the reference weight
+MC.G.week2 <- ((MC.DryWeight2-MC.DryWeight1)/(MC.DryWeight1))*100/(days) #calculate growth rate in % growth per day normalized to initial mass
+MC.G.week4 <- ((MC.DryWeight4-MC.DryWeight3)/(MC.DryWeight3))*100/(days) #calculate growth rate in % growth per day normalized to initial mass
+MC.G.week6 <- ((MC.DryWeight6-MC.DryWeight5)/(MC.DryWeight5))*100/(days) #calculate growth rate in % growth per day normalized to initial mass
 
-PD.dryweight.initial <- ((PD.weight$Initial_01May)/(1-(DenSW0/PD.Arag))) #Calculates the dry weight in grams using Equation 1 from Spencer Davies 1989 calculates the density of the reference weight
-PD.dryweight.final <- ((PD.weight$Initial_12June)/(1-(DenSW5/PD.Arag))) #Calculates the dry weight in grams using Equation 1 from Spencer Davies 1989 calculates the density of the reference weight
+MC.G.data <- cbind(MC.weight,MC.G.week2,MC.G.week4,MC.G.week6) #combine growth rate data and metadata
+colnames(MC.G.data) <- c("Species",  "Coral.ID",	"Treatment",	"Initial_01May",	"Final_01May",	"Initial_15May",	"Final_15May",	"Initial_29May",	"Final_29May",	"Initial_12June",	"Week2",	"Week4",	"Week6")
 
-MC.growth.rate <- ((MC.dryweight.final-MC.dryweight.initial)/MC.dryweight.initial)*100/days #calculates growth in % per day (grams changed/grams initial/day)
-PD.growth.rate <- ((PD.dryweight.final-PD.dryweight.initial)/PD.dryweight.initial)*100/days #calculates growth in % per day (grams changed/grams initial/day)
+growth.rate <-rbind(MC.G.data,PD.G.data)
 
 
-MC.growth <- data.frame(MC.weight,MC.growth.rate)
-colnames(MC.growth) <- c("Species",	"Coral.ID",	"Treatment",	"Initial.weight",	"Final.weight",	"Growth.Rate")
+G.counts.2 <- aggregate(growth.rate["Week2"], by=growth.rate[c("Species","Treatment")], FUN=length)
+G.means.2 <- aggregate(Week2 ~ Species + Treatment, data=growth.rate, mean, na.rm = TRUE)
+G.se.2 <- aggregate(Week2 ~ Species + Treatment, data=growth.rate, std.error, na.rm = TRUE)
+G.means.2 <- cbind(G.means.2, G.se.2$Week2) 
+G.means.2$Time <- c("Week2")
+colnames(G.means.2) <- c("Species", "Treatment", "Mean", "SE", "Time")
+G.means.2
 
-PD.growth <- data.frame(PD.weight,PD.growth.rate)
-colnames(PD.growth) <- c("Species",  "Coral.ID",	"Treatment",	"Initial.weight",	"Final.weight",	"Growth.Rate")
+G.counts.4 <- aggregate(growth.rate["Week4"], by=growth.rate[c("Species","Treatment")], FUN=length)
+G.means.4 <- aggregate(Week4 ~ Species + Treatment, data=growth.rate, mean, na.rm = TRUE)
+G.se.4 <- aggregate(Week4 ~ Species + Treatment, data=growth.rate, std.error, na.rm = TRUE)
+G.means.4 <- cbind(G.means.4, G.se.4$Week4) 
+G.means.4$Time <- c("Week4")
+colnames(G.means.4) <- c("Species", "Treatment", "Mean", "SE", "Time")
+G.means.4
 
-growth.rate <-rbind(MC.growth,PD.growth)
+G.counts.6 <- aggregate(growth.rate["Week6"], by=growth.rate[c("Species","Treatment")], FUN=length)
+G.means.6 <- aggregate(Week6 ~ Species + Treatment, data=growth.rate, mean, na.rm = TRUE)
+G.se.6 <- aggregate(Week6 ~ Species + Treatment, data=growth.rate, std.error, na.rm = TRUE)
+G.means.6 <- cbind(G.means.6, G.se.6$Week6) 
+G.means.6$Time <- c("Week6")
+colnames(G.means.6) <- c("Species", "Treatment", "Mean", "SE", "Time")
+G.means.6
+PH
+G <- rbind(G.means.2, G.means.4, G.means.6) 
+G$TS <- c("MC Amb", "PD Amb", "MC High", "PD High","MC Amb", "PD Amb", "MC High", "PD High","MC Amb", "PD Amb", "MC High", "PD High")
 
-growth.counts <- aggregate(growth.rate["Growth.Rate"], by=growth.rate[c("Species","Treatment")], FUN=length)
-growth.means <- aggregate(Growth.Rate ~ Species + Treatment, data=growth.rate, mean, na.rm = TRUE)
-growth.se <- aggregate(Growth.Rate ~ Species + Treatment, data=growth.rate, std.error, na.rm = TRUE)
-growth.means <- cbind(growth.means, growth.se$Growth.Rate) 
-colnames(growth.means) <- c("Species", "Treatment", "Growth.mean", "Growth.se")
-growth.means[, "TS"] <- c("MC Amb", "PD Amb", "MC High", "PD High")
-growth.means
-
-Fig16 <- ggplot(growth.means, aes(x=Species, y=Growth.mean, fill=Treatment)) + 
-  geom_bar() +
-  geom_bar(position=position_dodge(), stat="identity",
-           colour="black", # Use black outlines,
-           size=.3, # set line weight
-           show_guide=FALSE) + #remove slash from legend
-  scale_fill_manual(values=c("blue", "red")) +  #Set bar color
-  geom_errorbar(aes(ymin=Growth.mean-Growth.se, ymax=Growth.mean+Growth.se),
-                size=.3,    # set line weight
-                width=.2,   # set error bar width
-                position=position_dodge(.9)) + # offset the lines on the x axis so they match the bars and don't overlap
-  xlab("Species") + #Label the X Axis
-  ylab("Growth (% d-1)") + #Label the Y Axis
+Fig16 <- ggplot(G, aes(x=Time, y=Mean, group=TS), position="dodge") + 
+  geom_errorbar(aes(ymin=G$Mean-G$SE, ymax=G$Mean+G$SE), colour="black", width=.1) + 
+  geom_point(aes(shape=Species), size = 4) +
+  geom_line(aes(linetype=Treatment), size = 0.5) +
+  xlab("Time") + #Label the X Axis
+  ylab("Growth % per Day") + #Label the Y Axis
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
         panel.border = element_blank(), #Set the border
         panel.grid.major = element_blank(), #Set the major gridlines
         panel.grid.minor = element_blank(), #Set the minor gridlines
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank()) #Set plot legend key
-Fig16 #View figure
+Fig16
+
+###Repeated Measures ANOVA
+G.RM <- growth.rate[,c(1,3,11:13)] #subset factor and growth data
+G.RM <- melt(G.RM) #reshape into long format
+G.RM$Subject <- rep(1:94, times=3) #add subject IDs
+
+Growth.RM.lme <- lme((sqrt(value+1)) ~ variable*Treatment*Species, random = ~ variable|Subject, data=na.omit(G.RM)) #repeated measures ANOVA with random intercept but not slope (clonal fragments expect to respond the same)
+Growth.results <- summary(Growth.RM.lme) #view RM ANOVA summary
+Growth.stats <- anova(Growth.RM.lme) #view F and p values
+
+Growth.RM.posthoc <- lsmeans(Growth.RM.lme, specs=c("variable","Treatment","Species")) #calculate MS means
+Growth.RM.posthoc #view results
+Growth.RM.posthoc.p <- contrast(Growth.RM.posthoc, method="pairwise", by=c("Species","variable")) #contrast treatment groups within a species at each time point
+Growth.RM.posthoc.p #view results
 
 
 ###Testing ANOVA Assumptions
-###Homogeneity of variance
-#get unstandardized predicted and residual values
-growth.results <-aov(log10(Growth.Rate) ~ Treatment + Species + Treatment*Species, data=growth.rate)
-growth.stats <- anova(growth.results)
-unstandardizedPredicted <- predict(growth.results)
-unstandardizedResiduals <- resid(growth.results)
-
-#get standardized values and plot to determine normality
-standardizedPredicted <- (unstandardizedPredicted - mean(unstandardizedPredicted)) / sd(unstandardizedPredicted)
-standardizedResiduals <- (unstandardizedResiduals - mean(unstandardizedResiduals)) / sd(unstandardizedResiduals)
-#create standardized residuals plot
-plot(standardizedPredicted, standardizedResiduals, main = "Standardized Residuals Plot", xlab = "Standardized Predicted Values", ylab = "Standardized Residuals")
-#add horizontal line
-abline(0,0)
-leveneTest(log10(Growth.Rate) ~Treatment * Species, data=growth.rate)
-
 ###Data are normally distributed
-results.stdres <- rstandard(growth.results)
-qqnorm(results.stdres) # normal quantile plot
-qqline(results.stdres) # adding a qline of comparison
-shapiro.test(results.stdres) #runs a normality test using shapiro-wilk test on the standardized residuals
-
-growth.HSD <- TukeyHSD(growth.results, ordered = FALSE, conf.level = 0.95)
-growth.HSD
+hist(RM.lme$residuals) #histogram
+qqnorm(RM.lme$residuals) # normal quantile plot
 
 #calculate backtransformed means and SE
-growth.rate$rate.trans <- log10(growth.rate$Growth.Rate)
-sp.growth.trans.avg <- aggregate(rate.trans ~ Species, data=growth.rate, mean, na.rm = TRUE) #calculate the averages by Species 
-sp.growthbacktrans.avg <- 10^(sp.growth.trans.avg$rate.trans) #backtransform the average
-
-growth.trans.avg <- aggregate(rate.trans  ~ Species + Treatment, data=growth.rate, mean, na.rm = TRUE) #calculate the averages by Species and Treatment
-growth.trans.se <- aggregate(rate.trans  ~ Species + Treatment, data=growth.rate, std.error, na.rm = TRUE) #calculate the standard errors by Species and Treatment
-growth.trans.std <- aggregate(rate.trans  ~ Species + Treatment, data=growth.rate, sd, na.rm = TRUE) #calculate the standard deviation by Species and Treatment
+G.RM$rate.trans <- sqrt(G.RM$value+1)
+growth.trans.avg <- aggregate(rate.trans  ~ Species + Treatment + variable, data=G.RM, mean, na.rm = TRUE) #calculate the averages by Species and Treatment
+growth.trans.se <- aggregate(rate.trans  ~ Species + Treatment + variable, data=G.RM, std.error, na.rm = TRUE) #calculate the standard errors by Species and Treatment
+growth.trans.std <- aggregate(rate.trans  ~ Species + Treatment + variable, data=G.RM, sd, na.rm = TRUE) #calculate the standard deviation by Species and Treatment
 growth.trans <- growth.trans.avg #generate dataframe of averages
-colnames(growth.trans) <- c("Species", "Treatment", "avg")
+colnames(growth.trans) <- c("Species", "Treatment", "Time", "avg")
 growth.trans$Upper <- growth.trans$avg+growth.trans.se$rate.trans
 growth.trans$Lower <- growth.trans$avg-growth.trans.se$rate.trans
 back.trans.growth <- growth.trans
-back.trans.growth$avg <- 10^(growth.trans$avg)
-back.trans.growth$Upper <- 10^(growth.trans$Upper)
-back.trans.growth$Lower <- 10^(growth.trans$Lower)
-back.trans.growth
+back.trans.growth$avg <- ((growth.trans$avg)^2)-1
+back.trans.growth$Upper <- ((growth.trans$Upper)^2)-1
+back.trans.growth$Lower <- ((growth.trans$Lower)^2)-1
+back.trans.growth$TS <- c("MC Amb", "PD Amb", "MC High", "PD High","MC Amb", "PD Amb", "MC High", "PD High","MC Amb", "PD Amb", "MC High", "PD High")
 
 #Plot backtransformed means and SE
-Fig17 <- ggplot(data=back.trans.growth, aes(x=factor(Species), y=(avg), fill=Treatment)) + #plot methylation data averages
-  geom_bar()+
-  geom_bar(stat="identity", position=position_dodge(), #use values and offset position so bars don't overlap
-           colour="black", # set line color,
-           size=.3, #set line weight
-           show_guide=FALSE) + #remove slash from legend
-  scale_fill_manual(values=c("blue", "red")) + #set fill color for bars
-  geom_errorbar(aes(ymin=Lower, ymax=Upper), #plot standard errors
-                width=.2,                    # set width of the error bars
-                position=position_dodge(.9)) + #offset position so bars don't overlap
+Fig17 <- ggplot(back.trans.growth, aes(x=Time, y=avg, group=TS), position="dodge") + 
+  geom_errorbar(aes(ymin=back.trans.growth$Lower, ymax=back.trans.growth$Upper), colour="black", width=.1) + 
+  geom_point(aes(shape=Species), size = 4) +
+  geom_line(aes(linetype=Treatment), size = 0.5) +
+  xlab("Time") + #Label the X Axis
+  ylab("Growth % per Day") + #Label the Y Axis
   ggtitle("A") + #set plot title
-  xlab("Species") + #Label the X Axis
-  ylab("Growth (% d-1)") + #Label the Y Axis
   theme_bw() + #Set the background color
   theme(axis.line = element_line(color = 'black'), #Set the axes color
+        axis.title=element_text(size=14,face="bold"), #Set axis format
         panel.border = element_blank(), #Set the border
         panel.grid.major = element_blank(), #Set the major gridlines
         panel.grid.minor = element_blank(), #Set the minor gridlines
         plot.background =element_blank(), #Set the plot background
         legend.key = element_blank(), #Set plot legend key
-        plot.title=element_text(hjust=0)) #Justify the title to the top left
-Fig17 #View figure
+        plot.title=element_text(hjust=0))
+Fig17
+  
+
 
 #------------------------------------------------
 #DNA METHYLATION ANALYSIS
@@ -1146,14 +1352,17 @@ Fig19 #View figure
 
 #------------------------------------------------
 #CAPTURE ALL STATISTICAL OUTPUT TO A FILE
-
-capture.output(MC.OPLSResults, PD.OPLSResults, ALL.OPLSResults, growth.results, growth.stats, growth.HSD, methylation.results, methylation.stats, methylation.HSD, file="Bulk_Methylation_Statistical_Results.txt")
+setwd(file.path(mainDir, 'Output'))
+capture.output(MC.OPLSResults, PD.OPLSResults, ALL.OPLSResults, Growth.results, Growth.stats, Growth.RM.posthoc.p, methylation.results, methylation.stats, methylation.HSD, RSD.result,  file="Bulk_Methylation_Statistical_Results.txt")
 
 Figure.S1 <- arrangeGrob(Fig3, Fig2, Fig1, ncol=3)
 ggsave(file="FigureS1_Manuscript.pdf", Figure.S1, width = 11, height = 4, units = c("in"))
 
 Figure.S2 <- arrangeGrob(Fig6, Fig9, ncol=2)
 ggsave(file="FigureS2_Manuscript.pdf", Figure.S2, width = 11, height = 4, units = c("in"))
+
+Figure.S3 <- arrangeGrob(Fig.RSD, ncol=1)
+ggsave(file="FigureS3_Manuscript.pdf", Figure.S3, width = 11, height = 4, units = c("in"))
 
 Figure.1 <- arrangeGrob(Fig11, Fig12, ncol=2)
 ggsave(file="Figure1_Manuscript.pdf", Figure.1, width = 11, height = 4, units = c("in"))

@@ -1,0 +1,82 @@
+Bulk Methylation Metadata
+
+Field Temperature 
+20140328 - 20140402 yyyymmdd 1m depth directly adjacent to corals (<1m distance)
+Onset HOBO Water Temperature Pro v2 Data Logger - U22-001
+Operation range†: -40° to 70°C (-40° to 158°F) in air; maximumsustained temperature of 50°C (122°F) in water
+Accuracy: ±0.21°C from 0° to 50°C (±0.38°F from 32° to 122°F)
+Resolution: 0.02°C at 25°C (0.04°F at 77°F)
+Response time: (90%) 5 minutes in water; 12 minutes in air moving 2 m/sec (typical)
+Stability (drift): 0.1°C (0.18°F) per year
+Real-time clock: ± 1 minute per month 0° to 50°C (32° to 122°F)
+serial number 9768602
+
+Date.Time = date and time m/d/yy h:m
+Temperature = degrees Celcius
+
+#########################################################
+Field Light
+LI-COR LI-1400 data logger - Serial Number: DLA-4023
+Resolution: 16 bit (1 part in 65,536).
+Scanning Speed: 10 channels per second.
+Voltage Accuracy: < 0.15% of full scale reading (25 °C). ± 0.2% (0 to 55 °C).
+Current Accuracy: ± 0.3% of full scale reading (25 °C). ± 0.5% (0 to 55 °C).
+Temperature Coefficient: ± 0.01% of reading per °C.
+Linearity: 0.07%.
+Frequency Rejection: >90 dB at 50 or 60 Hz (software selectable). 
+
+LI-COR Underwater LI-192 - Serial Number: UWQ-7843
+LI-192SA Underwater Quantum Sensor
+The LI-192SA is cosine corrected and features corrosion resistant, rugged construction for use in freshwater or saltwater and pressures up to 800 psi (5500 kPa, 560 meters depth).
+Absolute Calibration: ± 5% in air traceable to NIST.
+Sensitivity:Typically 4 μA per 1000 μmol s-1 m-2 in water.
+Linearity: Maximum deviation of 1% up to 10,000 μmol s-1 m-2
+Stability: < ± 2% change over a 1 year period.
+Response Time: 10 μs.
+Temperature Dependence:± 0.15% per °C maximum.
+Cosine Correction: Optimized for underwater and atmospheric use.
+Azimuth: < ± 1% error over 360° at 45° elevation.
+Detector: High stability silicon photovoltaic detector(blue enhanced).
+Multiplier (in water): -277.26 µmol s-1 m-2 per microamp
+
+Date = 20140204
+Time = yyyymmdd
+Depth = meters
+Clouds = no= full sunlighht
+Light = micromol photons s^-1 m^-2
+
+
+
+Certified Temperature Probe: VWR Traceable Digital Thermometer 
+Model #: 61220-601
+Serial Number: 140073939
+
+pH meter: Thermo Scientific Orion 3 Star pH Portable
+Serial Number: A07104
+
+pH probe: Mettler Toledo DG115-SC
+Short description 	Combined glass pH electrode with a fixed ground-glass sleeve junction for aqueous media
+Applications 	acid/base aqueous
+Measurement range 	pH 0-14
+Temperature range 	0-100 °C
+Length 	149.5 mm
+Shaft diameter 	12 mm
+Calibrated to Dickson Tris standards
+
+Salinity:
+YSI 63 pH Salinity Conductivity Temperature
+Salinity
+Range: 0 to 80 ppt
+Resolution: 0.1 ppt
+Accuracy: ±2%, or ± 0.1 ppt 
+Calibrated with YSI Conductivity standard 50,000 microseimens
+
+pH Stat: Neptune Systems Apex Aquacontroller
+Lab Grade pH probe – Neptune Systems
+
+
+Light Logging:
+Odyssey PAR Logger
+Long et al (2012) L&O Methods 416-424
+Submersible to 20m. Cosine corrected photosynthetic irradiance sensor 400-700nm
+
