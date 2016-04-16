@@ -331,11 +331,11 @@ tank.lights <- cbind(tank.light.data, tank.time) #Combine time and light data
 colnames(tank.lights) <- c("Date", "Tank4", "Tank5", "Tank4.quanta", "Tank5.quanta", "Time") #Rename columns to describe contents
 tank.lights #View data
 
-quarterly.tank.light.mean4 <- aggregate(Tank4 ~ Time, data=tank.lights, mean, na.rm=TRUE) #calculate mean of light for every 15 min interval
-quarterly.tank.light.se4 <- aggregate(Tank4 ~ Time, data=tank.lights, std.error, na.rm=TRUE)  #calculate standard error of the mean of light for every 15 min interval
-quarterly.tank.light.mean5 <- aggregate(Tank5 ~ Time, data=tank.lights, mean, na.rm=TRUE) #calculate mean of light for every 15 min interval
-quarterly.tank.light.se5 <- aggregate(Tank5 ~ Time, data=tank.lights, std.error, na.rm=TRUE)  #calculate standard error of the mean of light for every 15 min interval
-tank.light.means <- data.frame(quarterly.tank.light.mean4, quarterly.tank.light.se4$Tank4, quarterly.tank.light.mean5$Tank5, quarterly.tank.light.se5$Tank5) #combine mean and standard error results
+quarterly.tank.light.mean4 <- aggregate(Tank4.quanta ~ Time, data=tank.lights, mean, na.rm=TRUE) #calculate mean of light for every 15 min interval
+quarterly.tank.light.se4 <- aggregate(Tank4.quanta ~ Time, data=tank.lights, std.error, na.rm=TRUE)  #calculate standard error of the mean of light for every 15 min interval
+quarterly.tank.light.mean5 <- aggregate(Tank5.quanta ~ Time, data=tank.lights, mean, na.rm=TRUE) #calculate mean of light for every 15 min interval
+quarterly.tank.light.se5 <- aggregate(Tank5.quanta ~ Time, data=tank.lights, std.error, na.rm=TRUE)  #calculate standard error of the mean of light for every 15 min interval
+tank.light.means <- data.frame(quarterly.tank.light.mean4, quarterly.tank.light.se4$Tank4.quanta, quarterly.tank.light.mean5$Tank5.quanta, quarterly.tank.light.se5$Tank5.quanta) #combine mean and standard error results
 colnames(tank.light.means) <- c("Time", "Tank4.mean", "Tank4.se", "Tank5.mean", "Tank5.se")  #Rename columns to describe contents
 
 Fig9 <- ggplot(tank.light.means, aes(Time)) + # plot mean light by tank
@@ -610,12 +610,12 @@ mean.carb.output <-ddply(carbo.melted, .(Treatment, variable), summarize, #For e
 mean.carb.output # display mean and sem 
 mean.carb.output <- mean.carb.output[with(mean.carb.output, order(variable)), ] #order the data by the variables
 mean.carb.output <- mean.carb.output[-c(1:4,9,10,29,30), ] #remove non-numeric parameters extra
-
+setwd(file.path(mainDir, 'Output'))
 write.table (mean.carb.output, "Seawater_chemistry_table_Output.csv", sep=",", row.names = FALSE)
 
 #------------------------------------------------
 #METABOLOMIC ANALYSIS
-
+setwd(file.path(mainDir, 'Data'))
 #loaded data after truncation from 0.5-10 and removal of water peak (4.73959- 4.93955 ppm)
 metabo.data <- read.csv("BM_NMR_Data_0.04binned_truncated_nowater.csv", header=TRUE, sep=",", na.strings="NA") #load data with a header, separated by commas, with NA as NA
 
@@ -838,7 +838,7 @@ MC.SigMetabolites<-data.frame(metabolite=MC.sig_metabolites,perchange=Perch.MC[M
 MC.SigMet<-merge(MC.SigLoads, MC.SigMetabolites, by='metabolite') #combine bins, loadings, and relative percent change 
 MC.SigMet<-MC.SigMet[order(-abs(MC.SigMet[,'loads'])),] #order by absolute value of the loadings
 setwd(file.path(mainDir, 'Output')) #set output destination
-write.csv(MC.SigMet, 'Table_S3_SigMetabolites_Mcapitata_Treatment_OPLSDA.csv') #write results to file
+write.csv(MC.SigMet, 'Table_S2_SigMetabolites_Mcapitata_Treatment_OPLSDA.csv') #write results to file
 
 #Peak Correlation detection for ID in Chenomx
 #Correlate peaks of significant bin with other bins to extract and identify metabolite peaks
@@ -957,7 +957,7 @@ PD.SigMetabolites<-data.frame(metabolite=PD.sig_metabolites,perchange=Perch.PD[P
 PD.SigMet<-merge(PD.SigLoads, PD.SigMetabolites, by='metabolite')
 PD.SigMet<-PD.SigMet[order(-abs(PD.SigMet[,'loads'])),]
 setwd(file.path(mainDir, 'Output'))
-write.csv(PD.SigMet, 'Table_S2_SigMetabolites_Pdamicornis_Treatment_OPLSDA.csv')
+write.csv(PD.SigMet, 'Table_S3_SigMetabolites_Pdamicornis_Treatment_OPLSDA.csv')
 
 #Peak Correlation detection for ID in Chenomx
 #Correlate peaks of significant bin with other bins to extract and identify metabolite peaks
@@ -1142,7 +1142,7 @@ colnames(MC.G.data) <- c("Species",  "Coral.ID",	"Treatment",	"Initial_01May",	"
 growth.rate <-rbind(MC.G.data,PD.G.data)
 
 
-G.counts.2 <- aggregate(growth.rate["Week2"], by=growth.rate[c("Species","Treatment")], FUN=length)
+G.counts.2 <- aggregate(growth.rate["Week2"], by=growth.rate[c("Species","Treatment")], FUN=na.omit(length))
 G.means.2 <- aggregate(Week2 ~ Species + Treatment, data=growth.rate, mean, na.rm = TRUE)
 G.se.2 <- aggregate(Week2 ~ Species + Treatment, data=growth.rate, std.error, na.rm = TRUE)
 G.means.2 <- cbind(G.means.2, G.se.2$Week2) 
@@ -1150,7 +1150,7 @@ G.means.2$Time <- c("Week2")
 colnames(G.means.2) <- c("Species", "Treatment", "Mean", "SE", "Time")
 G.means.2
 
-G.counts.4 <- aggregate(growth.rate["Week4"], by=growth.rate[c("Species","Treatment")], FUN=length)
+G.counts.4 <- aggregate(growth.rate["Week4"], by=growth.rate[c("Species","Treatment")], FUN=na.omit(length))
 G.means.4 <- aggregate(Week4 ~ Species + Treatment, data=growth.rate, mean, na.rm = TRUE)
 G.se.4 <- aggregate(Week4 ~ Species + Treatment, data=growth.rate, std.error, na.rm = TRUE)
 G.means.4 <- cbind(G.means.4, G.se.4$Week4) 
@@ -1158,7 +1158,7 @@ G.means.4$Time <- c("Week4")
 colnames(G.means.4) <- c("Species", "Treatment", "Mean", "SE", "Time")
 G.means.4
 
-G.counts.6 <- aggregate(growth.rate["Week6"], by=growth.rate[c("Species","Treatment")], FUN=length)
+G.counts.6 <- aggregate(growth.rate["Week6"], by=growth.rate[c("Species","Treatment")], FUN=na.omit(length))
 G.means.6 <- aggregate(Week6 ~ Species + Treatment, data=growth.rate, mean, na.rm = TRUE)
 G.se.6 <- aggregate(Week6 ~ Species + Treatment, data=growth.rate, std.error, na.rm = TRUE)
 G.means.6 <- cbind(G.means.6, G.se.6$Week6) 
