@@ -15,7 +15,7 @@ library("plyr") #splitting, applying, and combining data
 library("seacarb") #seawater carbonate chemistry
 library("vegan") #calculating distance matrices
 library("nlme") #mixed model, repeated measures ANOVA
-library("lsmeans") #mixed model posthoc
+library("lsmeans") #mixed model posthoc  statistical comparisons
 library("multcompView") #mixed model posthoc contrasts
 library("MetabolAnalyze") #scaling function
 source('/Users/hputnam/Publications/In_Review/Bulk_Methylation/Coral_DNAMethylation_Plasticity/R_Analysis/Scripts/opls.R') #OPLS DA analysis script by Paul Anderson used in Sogin et al 2014 (http://birg.cs.cofc.edu/index.php/O-PLS)
@@ -41,19 +41,22 @@ require("gridExtra") #Arrange Plots for output
 
 #############################################################
 setwd("/Users/hputnam/Publications/In_Review/Bulk_Methylation/Coral_DNAMethylation_Plasticity/R_Analysis/Data") #set working directory
-mainDir<-'/Users/hputnam/Publications/In_Review/Bulk_Methylation/Coral_DNAMethylation_Plasticity/R_Analysis/'
+mainDir<-'/Users/hputnam/Publications/In_Review/Bulk_Methylation/Coral_DNAMethylation_Plasticity/R_Analysis/' #set main directory
 
 #------------------------------------------------
 #Light Calibration
+#Tank3 Serial Number = 2485
+#Tank4 Serial Number = 2486
+#Tank5 Serial Number = 2487
 Cal.L.data <- read.csv("BM_Light_Calibration_Data.csv", header=TRUE, sep=",", na.strings="NA") #load data with a header, separated by commas, with NA as NA
 Cal.L.data$Licor.quanta <- (Cal.L.data$Licor.mol.m2*10^6)/(15*60) #convert 15 min integrated data to instantaneous µmol m-2 s-1
 Cal.L.data$Tank3.quanta <- Cal.L.data$Tank3/(15*60) #convert 15 min integrated data to instantaneous µmol m-2 s-1
 Cal.L.data$Tank4.quanta <- Cal.L.data$Tank4/(15*60) #convert 15 min integrated data to instantaneous µmol m-2 s-1
 Cal.L.data$Tank5.quanta <- Cal.L.data$Tank5/(15*60) #convert 15 min integrated data to instantaneous µmol m-2 s-1
 
-T3.lm <- coef(lm(Licor.quanta ~ Tank3.quanta, data=Cal.L.data))
-T4.lm <- coef(lm(Tank4.quanta ~ Licor.quanta, data=Cal.L.data))
-T5.lm <- coef(lm(Tank5.quanta ~ Licor.quanta, data=Cal.L.data))
+T3.lm <- coef(lm(Licor.quanta ~ Tank3.quanta, data=Cal.L.data)) #extract model coefficients
+T4.lm <- coef(lm(Tank4.quanta ~ Licor.quanta, data=Cal.L.data)) #extract model coefficients
+T5.lm <- coef(lm(Tank5.quanta ~ Licor.quanta, data=Cal.L.data)) #extract model coefficients
 
 ##ACCLIMATION LIGHT AND TEMPERATURE ANALYSIS
 #Data from period that corals were held in tank prior to experimental conditions
@@ -132,8 +135,8 @@ mydate2 <- strptime(Field.data$Date.Time, format="%m/%d/%y %H:%M") #convert date
 quarterhours2 <- format(as.POSIXct(mydate2) ,format = "%H:%M") #set time as every 15 min
 Field.data <- cbind(Field.data, quarterhours2) #make a dataframe out of data and new times
 Field.data #View data
-min(Field.data$Temperature)
-max(Field.data$Temperature)
+min(Field.data$Temperature) #view minimum
+max(Field.data$Temperature) #view maximum
 quarterly.temp.mean2 <- aggregate(Temperature ~ quarterhours2, data=Field.data, mean, na.rm=TRUE) #calculate mean of temperature for every 15 min interval
 quarterly.temp.se2 <- aggregate(Temperature ~ quarterhours2, data=Field.data, std.error, na.rm=TRUE)  #calculate standard error of the mean of temperature for every 15 min interval
 Field.temp.N <- sum(!is.na(Field.data$Temperature)) #Count sample size
@@ -177,8 +180,8 @@ Tank5.temp.N <- sum(!is.na(tank.tempdata$Tank5)) #Count sample size
 
 Fig4 <- ggplot(tank.tempdata, aes(Date.Time)) + #plot tank temperature data
   geom_line(aes(y = Tank4, colour="Ambient")) + #plot Temperature data as a line on the Y axis with date as the X axis 
-  geom_line(aes(y = Tank5, colour="High")) +
-  scale_colour_manual("Treatment", values = c("blue","red")) +
+  geom_line(aes(y = Tank5, colour="High")) + #plot Temperature data as a line on the Y axis with date as the X axis 
+  scale_colour_manual("Treatment", values = c("blue","red")) + #add colors for treatments
   xlab("Date") + #Label the X Axis
   ylab("Temperature °C") + #Label the Y Axis
   ggtitle("") + #label the main title
@@ -249,7 +252,7 @@ Fig6 <- ggplot(tank.temp.means, aes(Time)) + # plot mean temp by tank
   geom_errorbar(aes(x=Time, ymax=Tank5.mean+Tank5.se, ymin=Tank5.mean-Tank5.se), position=position_dodge(0.9), data=tank.temp.means) + #set values for standard error bars and offset on the X axis for clarity
   scale_colour_manual("Treatment", values = c("blue","red")) +
   scale_x_discrete(breaks=c("0:00", "01:00", "02:00", "03:00", "04:00", "05:00", "06:00", "07:00", "08:00", "09:00", "10:00", "11:00", "12:00","13:00", "14:00", "15:00", "16:00", "17:00", "18:00","19:00", "20:00", "21:00", "22:00", "23:00")) + #set discrete breaks on the X axis
-  ggtitle("A") + 
+  ggtitle("A") + #Label graphic title
   xlab("Time") + #Label the X Axis
   ylab("Temperature (°C)") + #Label the Y Axis
   theme_bw() + #Set the background color
@@ -1138,41 +1141,38 @@ MC.G.week6 <- ((MC.DryWeight6-MC.DryWeight5)/(MC.DryWeight5))*100/(days) #calcul
 
 MC.G.data <- cbind(MC.weight,MC.G.week2,MC.G.week4,MC.G.week6) #combine growth rate data and metadata
 colnames(MC.G.data) <- c("Species",  "Coral.ID",	"Treatment",	"Initial_01May",	"Final_01May",	"Initial_15May",	"Final_15May",	"Initial_29May",	"Final_29May",	"Initial_12June",	"Week2",	"Week4",	"Week6")
+growth.rate <-rbind(MC.G.data,PD.G.data) #combine species growth data
+G.counts.2 <- aggregate(growth.rate["Week2"], by=growth.rate[c("Species","Treatment")], FUN=na.omit(length)) #calculate sample size
+G.means.2 <- aggregate(Week2 ~ Species + Treatment, data=growth.rate, mean, na.rm = TRUE) #calculate mean
+G.se.2 <- aggregate(Week2 ~ Species + Treatment, data=growth.rate, std.error, na.rm = TRUE) #calculate se
+G.means.2 <- cbind(G.means.2, G.se.2$Week2) #combine mean and se
+G.means.2$Time <- c("Week2") #assign time point name
+colnames(G.means.2) <- c("Species", "Treatment", "Mean", "SE", "Time") #assign column names
+G.means.2 #view data
 
-growth.rate <-rbind(MC.G.data,PD.G.data)
+G.counts.4 <- aggregate(growth.rate["Week4"], by=growth.rate[c("Species","Treatment")], FUN=na.omit(length)) #calculate sample size
+G.means.4 <- aggregate(Week4 ~ Species + Treatment, data=growth.rate, mean, na.rm = TRUE) #calculate mean
+G.se.4 <- aggregate(Week4 ~ Species + Treatment, data=growth.rate, std.error, na.rm = TRUE) #calculate se
+G.means.4 <- cbind(G.means.4, G.se.4$Week4) #combine mean and se
+G.means.4$Time <- c("Week4") #assign time point name
+colnames(G.means.4) <- c("Species", "Treatment", "Mean", "SE", "Time") #assign column names
+G.means.4 #view data
 
+G.counts.6 <- aggregate(growth.rate["Week6"], by=growth.rate[c("Species","Treatment")], FUN=na.omit(length)) #calculate sample size
+G.means.6 <- aggregate(Week6 ~ Species + Treatment, data=growth.rate, mean, na.rm = TRUE) #calculate mean
+G.se.6 <- aggregate(Week6 ~ Species + Treatment, data=growth.rate, std.error, na.rm = TRUE) #calculate se
+G.means.6 <- cbind(G.means.6, G.se.6$Week6) #combine mean and se
+G.means.6$Time <- c("Week6") #assign time point name
+colnames(G.means.6) <- c("Species", "Treatment", "Mean", "SE", "Time") #assign column names
+G.means.6 #view data
 
-G.counts.2 <- aggregate(growth.rate["Week2"], by=growth.rate[c("Species","Treatment")], FUN=na.omit(length))
-G.means.2 <- aggregate(Week2 ~ Species + Treatment, data=growth.rate, mean, na.rm = TRUE)
-G.se.2 <- aggregate(Week2 ~ Species + Treatment, data=growth.rate, std.error, na.rm = TRUE)
-G.means.2 <- cbind(G.means.2, G.se.2$Week2) 
-G.means.2$Time <- c("Week2")
-colnames(G.means.2) <- c("Species", "Treatment", "Mean", "SE", "Time")
-G.means.2
-
-G.counts.4 <- aggregate(growth.rate["Week4"], by=growth.rate[c("Species","Treatment")], FUN=na.omit(length))
-G.means.4 <- aggregate(Week4 ~ Species + Treatment, data=growth.rate, mean, na.rm = TRUE)
-G.se.4 <- aggregate(Week4 ~ Species + Treatment, data=growth.rate, std.error, na.rm = TRUE)
-G.means.4 <- cbind(G.means.4, G.se.4$Week4) 
-G.means.4$Time <- c("Week4")
-colnames(G.means.4) <- c("Species", "Treatment", "Mean", "SE", "Time")
-G.means.4
-
-G.counts.6 <- aggregate(growth.rate["Week6"], by=growth.rate[c("Species","Treatment")], FUN=na.omit(length))
-G.means.6 <- aggregate(Week6 ~ Species + Treatment, data=growth.rate, mean, na.rm = TRUE)
-G.se.6 <- aggregate(Week6 ~ Species + Treatment, data=growth.rate, std.error, na.rm = TRUE)
-G.means.6 <- cbind(G.means.6, G.se.6$Week6) 
-G.means.6$Time <- c("Week6")
-colnames(G.means.6) <- c("Species", "Treatment", "Mean", "SE", "Time")
-G.means.6
-PH
 G <- rbind(G.means.2, G.means.4, G.means.6) 
 G$TS <- c("MC Amb", "PD Amb", "MC High", "PD High","MC Amb", "PD Amb", "MC High", "PD High","MC Amb", "PD Amb", "MC High", "PD High")
 
 Fig16 <- ggplot(G, aes(x=Time, y=Mean, group=TS), position="dodge") + 
-  geom_errorbar(aes(ymin=G$Mean-G$SE, ymax=G$Mean+G$SE), colour="black", width=.1) + 
-  geom_point(aes(shape=Species), size = 4) +
-  geom_line(aes(linetype=Treatment), size = 0.5) +
+  geom_errorbar(aes(ymin=G$Mean-G$SE, ymax=G$Mean+G$SE), colour="black", width=.1) + #plot sem
+  geom_point(aes(shape=Species), size = 4) + #plot points
+  geom_line(aes(linetype=Treatment), size = 0.5) + #add lines
   xlab("Time") + #Label the X Axis
   ylab("Growth % per Day") + #Label the Y Axis
   theme_bw() + #Set the background color
@@ -1199,7 +1199,6 @@ Growth.RM.posthoc #view results
 Growth.RM.posthoc.p <- contrast(Growth.RM.posthoc, method="pairwise", by=c("Species","variable")) #contrast treatment groups within a species at each time point
 Growth.RM.posthoc.p #view results
 
-
 ###Testing ANOVA Assumptions
 ###Data are normally distributed
 hist(RM.lme$residuals) #histogram
@@ -1211,20 +1210,20 @@ growth.trans.avg <- aggregate(rate.trans  ~ Species + Treatment + variable, data
 growth.trans.se <- aggregate(rate.trans  ~ Species + Treatment + variable, data=G.RM, std.error, na.rm = TRUE) #calculate the standard errors by Species and Treatment
 growth.trans.std <- aggregate(rate.trans  ~ Species + Treatment + variable, data=G.RM, sd, na.rm = TRUE) #calculate the standard deviation by Species and Treatment
 growth.trans <- growth.trans.avg #generate dataframe of averages
-colnames(growth.trans) <- c("Species", "Treatment", "Time", "avg")
-growth.trans$Upper <- growth.trans$avg+growth.trans.se$rate.trans
-growth.trans$Lower <- growth.trans$avg-growth.trans.se$rate.trans
-back.trans.growth <- growth.trans
-back.trans.growth$avg <- ((growth.trans$avg)^2)-1
-back.trans.growth$Upper <- ((growth.trans$Upper)^2)-1
-back.trans.growth$Lower <- ((growth.trans$Lower)^2)-1
-back.trans.growth$TS <- c("MC Amb", "PD Amb", "MC High", "PD High","MC Amb", "PD Amb", "MC High", "PD High","MC Amb", "PD Amb", "MC High", "PD High")
+colnames(growth.trans) <- c("Species", "Treatment", "Time", "avg") #assign column names
+growth.trans$Upper <- growth.trans$avg+growth.trans.se$rate.trans #calculate upper value for sem
+growth.trans$Lower <- growth.trans$avg-growth.trans.se$rate.trans #calculate lower value for sem
+back.trans.growth <- growth.trans #assign to new name
+back.trans.growth$avg <- ((growth.trans$avg)^2)-1 #backtransform data
+back.trans.growth$Upper <- ((growth.trans$Upper)^2)-1 #backtransform data
+back.trans.growth$Lower <- ((growth.trans$Lower)^2)-1 #backtransform data
+back.trans.growth$TS <- c("MC Amb", "PD Amb", "MC High", "PD High","MC Amb", "PD Amb", "MC High", "PD High","MC Amb", "PD Amb", "MC High", "PD High") #assign column names
 
 #Plot backtransformed means and SE
 Fig17 <- ggplot(back.trans.growth, aes(x=Time, y=avg, group=TS), position="dodge") + 
-  geom_errorbar(aes(ymin=back.trans.growth$Lower, ymax=back.trans.growth$Upper), colour="black", width=.1) + 
-  geom_point(aes(shape=Species), size = 4) +
-  geom_line(aes(linetype=Treatment), size = 0.5) +
+  geom_errorbar(aes(ymin=back.trans.growth$Lower, ymax=back.trans.growth$Upper), colour="black", width=.1) + #plot sem
+  geom_point(aes(shape=Species), size = 4) + #plot points
+  geom_line(aes(linetype=Treatment), size = 0.5) + #add lines
   xlab("Time") + #Label the X Axis
   ylab("Growth % per Day") + #Label the Y Axis
   ggtitle("A") + #set plot title
@@ -1239,7 +1238,6 @@ Fig17 <- ggplot(back.trans.growth, aes(x=Time, y=avg, group=TS), position="dodge
         plot.title=element_text(hjust=0))
 Fig17
   
-
 
 #------------------------------------------------
 #DNA METHYLATION ANALYSIS
@@ -1277,8 +1275,8 @@ Fig18 <- ggplot(data=methyl, aes(x=factor(Species), y=(avg), fill=Treatment)) + 
 Fig18 #View figure
 
 ###Testing ANOVA Assumptions
-methylation.results <- aov((Methylation^0.25) ~Treatment * Species, data=data)
-methylation.stats <- anova(methylation.results)
+methylation.results <- aov((Methylation^0.25) ~Treatment * Species, data=data) #run 2-way ANOVA
+methylation.stats <- anova(methylation.results) #view statistical results
 
 ###Testing ANOVA Assumptions
 ###Homogeneity of variance
@@ -1317,13 +1315,13 @@ trans.se <- aggregate(Methylation.trans ~ Species + Treatment, data=data, std.er
 trans.std <- aggregate(Methylation.trans ~ Species + Treatment, data=data, sd, na.rm = TRUE) #calculate the standard deviation by Species and Treatment
 trans.methyl <- trans.avg #generate dataframe of averages
 colnames(trans.methyl) <- c("Species", "Treatment", "avg")
-trans.methyl$Upper <- trans.methyl$avg+trans.se$Methylation.trans
-trans.methyl$Lower <- trans.methyl$avg-trans.se$Methylation.trans
-back.trans.methyl <- trans.methyl
-back.trans.methyl$avg <- (trans.methyl$avg)^4
-back.trans.methyl$Upper <- (trans.methyl$Upper)^4
-back.trans.methyl$Lower <- (trans.methyl$Lower)^4
-back.trans.methyl
+trans.methyl$Upper <- trans.methyl$avg+trans.se$Methylation.trans #calculate upper value of sem
+trans.methyl$Lower <- trans.methyl$avg-trans.se$Methylation.trans #calculate lower value of sem
+back.trans.methyl <- trans.methyl #assign to new name
+back.trans.methyl$avg <- (trans.methyl$avg)^4 #backtransform the data
+back.trans.methyl$Upper <- (trans.methyl$Upper)^4 #backtransform the data
+back.trans.methyl$Lower <- (trans.methyl$Lower)^4 #backtransform the data
+back.trans.methyl #view data
 
 #Plot backtransformed means and SE
 Fig19 <- ggplot(data=back.trans.methyl, aes(x=factor(Species), y=(avg), fill=Treatment)) + #plot methylation data averages
@@ -1348,7 +1346,6 @@ Fig19 <- ggplot(data=back.trans.methyl, aes(x=factor(Species), y=(avg), fill=Tre
         legend.key = element_blank(), #Set plot legend key
         plot.title=element_text(hjust=0)) #Justify the title to the top left
 Fig19 #View figure
-
 
 #------------------------------------------------
 #CAPTURE ALL STATISTICAL OUTPUT TO A FILE

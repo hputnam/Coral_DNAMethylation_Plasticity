@@ -1,9 +1,11 @@
 Bulk Methylation Metadata
 
+#########################################################
+Filename=BM_Field_Temp.csv
 Field Temperature 
 20140328 - 20140402 yyyymmdd 1m depth directly adjacent to corals (<1m distance)
 Onset HOBO Water Temperature Pro v2 Data Logger - U22-001
-Operation range†: -40° to 70°C (-40° to 158°F) in air; maximumsustained temperature of 50°C (122°F) in water
+Operation range†: -40° to 70°C (-40° to 158°F) in air; maximum sustained temperature of 50°C (122°F) in water
 Accuracy: ±0.21°C from 0° to 50°C (±0.38°F from 32° to 122°F)
 Resolution: 0.02°C at 25°C (0.04°F at 77°F)
 Response time: (90%) 5 minutes in water; 12 minutes in air moving 2 m/sec (typical)
@@ -15,7 +17,9 @@ Date.Time = date and time m/d/yy h:m
 Temperature = degrees Celcius
 
 #########################################################
-Field Light
+Filename=BM_Light_Calibration_Data.csv
+Filename=BM_Tank_Light.csv
+
 LI-COR LI-1400 data logger - Serial Number: DLA-4023
 Resolution: 16 bit (1 part in 65,536).
 Scanning Speed: 10 channels per second.
@@ -39,13 +43,43 @@ Azimuth: < ± 1% error over 360° at 45° elevation.
 Detector: High stability silicon photovoltaic detector(blue enhanced).
 Multiplier (in water): -277.26 µmol s-1 m-2 per microamp
 
-Date = 20140204
-Time = yyyymmdd
-Depth = meters
-Clouds = no= full sunlighht
-Light = micromol photons s^-1 m^-2
+Filename=BM_Light_Calibration_Data.csv
+Date.Time = date and time m/d/yy h:m
+Licor.mol.m2 = 15 min integrated light log (mol.m-2) from LI-192SA Underwater Quantum Sensor
+Tank3 = Odyssey PAR light loggers, 15 min integrated intensity counts 
+Tank4 = Odyssey PAR light loggers, 15 min integrated intensity counts 
+Tank5 = Odyssey PAR light loggers, 15 min integrated intensity counts
+Tank3 Serial Number = 2485
+Tank4 Serial Number = 2486
+Tank5 Serial Number = 2487
+
+Filename=BM_Tank_Light.csv
+Date.Time = date and time m/d/yy h:m
+Tank4 Serial Number = 2486
+Tank5 Serial Number = 2487
+ 
+For Odyssey PAR sensors see Long, M. H., Rheuban, J. E., Berg, P., & Zieman, J. C. (2012). A comparison and correction of light intensity loggers to photosynthetically active radiation sensors. Limnology and Oceanography: Methods, 10(6), 416-424.
+
+#########################################################
+Filename=BM_Acclimation.csv
+Date.Time = date and time m/d/yy h:m
+Tank3.Light = Odyssey PAR light loggers, 15 min integrated intensity counts  Tank3 Serial Number = 2485
+Tank3.Temp = Onset HOBO Water Temperature Pro v2 Data Logger - U22-001, 15 minute logging, Serial Number =10487933
 
 
+#########################################################
+
+
+
+
+#########################################################
+
+
+
+
+
+#########################################################
+Discrete Temperature
 
 Certified Temperature Probe: VWR Traceable Digital Thermometer 
 Model #: 61220-601
