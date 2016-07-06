@@ -1,7 +1,10 @@
-##Examination of DNA Methylation and Phenotypic Plasticity in Corals
-#Data from Putnam NSF (NSF OCE PRF-1323822) and EPSCOR Y5 (NSF EPS-0903833)
-#last modified 20160130 
-#See Readme file for details
+#Examination of DNA Methylation and Phenotypic Plasticity in Corals
+#Data published in Putnam et al Evolutionary Applications 2016 
+#Title: Ocean acidification influences host DNA methylation and phenotypic plasticity in environmentally susceptible corals
+#Contact: Hollie Putnam hollieputnam@gmail.com
+#Supported by: NSF Ocean Sciencs Postdoctoral Research Fellowship (NSF OCE PRF-1323822) and NSF EPSCOR (NSF EPS-0903833)
+#last modified 20160629
+#See Readme file for details on data files and metadata
 
 rm(list=ls()) # removes all prior objects
 
@@ -36,7 +39,7 @@ require("gridExtra") #Arrange Plots for output
 #BM_NMR_sample_info
 #pH probe calibration files : Coral_DNAMethylation_Plasticity/R_Analysis/Data/pH_Calibration_Files/
 #BM_Methylation.csv
-#BM_Buoyant_Weight.csv
+#BM_Buoyant_Weight_Repeated.csv
 
 
 #############################################################

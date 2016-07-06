@@ -19,44 +19,69 @@ variableWeek6 0.02321318 -0.494  0.673
 Residual      0.01010391              
 
 Fixed effects: (sqrt(value + 1)) ~ variable * Treatment * Species 
-                                                               Value   Std.Error  DF   t-value p-value
-(Intercept)                                                1.0504658 0.005589990 179 187.91910  0.0000
-variableWeek4                                              0.0353580 0.005481030 179   6.45099  0.0000
-variableWeek6                                              0.0289142 0.005811546 179   4.97530  0.0000
-Treatmenthigh                                             -0.0056886 0.007905439  90  -0.71958  0.4736
-SpeciesPocillopora damicornis                             -0.0142529 0.007664608  90  -1.85957  0.0662
-variableWeek4:Treatmenthigh                               -0.0161342 0.007751347 179  -2.08146  0.0388
-variableWeek6:Treatmenthigh                                0.0006194 0.008268988 179   0.07491  0.9404
-variableWeek4:SpeciesPocillopora damicornis               -0.0226166 0.007515210 179  -3.00945  0.0030
-variableWeek6:SpeciesPocillopora damicornis               -0.0154912 0.007968391 179  -1.94409  0.0535
-Treatmenthigh:SpeciesPocillopora damicornis               -0.0026499 0.010839392  90  -0.24447  0.8074
-variableWeek4:Treatmenthigh:SpeciesPocillopora damicornis  0.0088622 0.010628112 179   0.83385  0.4055
-variableWeek6:Treatmenthigh:SpeciesPocillopora damicornis -0.0080340 0.011305686 179  -0.71062  0.4782
+                                                               Value   Std.Error  DF
+(Intercept)                                                1.0504658 0.005589990 179
+variableWeek4                                              0.0353580 0.005481030 179
+variableWeek6                                              0.0289142 0.005811546 179
+Treatmenthigh                                             -0.0056886 0.007905439  90
+SpeciesPocillopora damicornis                             -0.0142529 0.007664608  90
+variableWeek4:Treatmenthigh                               -0.0161342 0.007751347 179
+variableWeek6:Treatmenthigh                                0.0006194 0.008268988 179
+variableWeek4:SpeciesPocillopora damicornis               -0.0226166 0.007515210 179
+variableWeek6:SpeciesPocillopora damicornis               -0.0154912 0.007968391 179
+Treatmenthigh:SpeciesPocillopora damicornis               -0.0026499 0.010839392  90
+variableWeek4:Treatmenthigh:SpeciesPocillopora damicornis  0.0088622 0.010628112 179
+variableWeek6:Treatmenthigh:SpeciesPocillopora damicornis -0.0080340 0.011305686 179
+                                                            t-value p-value
+(Intercept)                                               187.91910  0.0000
+variableWeek4                                               6.45099  0.0000
+variableWeek6                                               4.97530  0.0000
+Treatmenthigh                                              -0.71958  0.4736
+SpeciesPocillopora damicornis                              -1.85957  0.0662
+variableWeek4:Treatmenthigh                                -2.08146  0.0388
+variableWeek6:Treatmenthigh                                 0.07491  0.9404
+variableWeek4:SpeciesPocillopora damicornis                -3.00945  0.0030
+variableWeek6:SpeciesPocillopora damicornis                -1.94409  0.0535
+Treatmenthigh:SpeciesPocillopora damicornis                -0.24447  0.8074
+variableWeek4:Treatmenthigh:SpeciesPocillopora damicornis   0.83385  0.4055
+variableWeek6:Treatmenthigh:SpeciesPocillopora damicornis  -0.71062  0.4782
  Correlation: 
-                                                          (Intr) vrblW4 vrblW6 Trtmnt SpcsPd vrW4:T
-variableWeek4                                             -0.390                                   
-variableWeek6                                             -0.531  0.622                            
-Treatmenthigh                                             -0.707  0.276  0.376                     
-SpeciesPocillopora damicornis                             -0.729  0.284  0.388  0.516              
-variableWeek4:Treatmenthigh                                0.276 -0.707 -0.440 -0.390 -0.201       
-variableWeek6:Treatmenthigh                                0.373 -0.437 -0.703 -0.528 -0.272  0.618
-variableWeek4:SpeciesPocillopora damicornis                0.284 -0.729 -0.454 -0.201 -0.390  0.516
-variableWeek6:SpeciesPocillopora damicornis                0.388 -0.454 -0.729 -0.274 -0.531  0.321
-Treatmenthigh:SpeciesPocillopora damicornis                0.516 -0.201 -0.274 -0.729 -0.707  0.284
-variableWeek4:Treatmenthigh:SpeciesPocillopora damicornis -0.201  0.516  0.321  0.284  0.276 -0.729
-variableWeek6:Treatmenthigh:SpeciesPocillopora damicornis -0.273  0.320  0.514  0.386  0.375 -0.452
-                                                          vrW6:T vW4:Sd vW6:Sd Tr:SPd vW4:Td
-variableWeek4                                                                               
-variableWeek6                                                                               
-Treatmenthigh                                                                               
-SpeciesPocillopora damicornis                                                               
-variableWeek4:Treatmenthigh                                                                 
-variableWeek6:Treatmenthigh                                                                 
-variableWeek4:SpeciesPocillopora damicornis                0.319                            
-variableWeek6:SpeciesPocillopora damicornis                0.513  0.622                     
-Treatmenthigh:SpeciesPocillopora damicornis                0.385  0.276  0.376              
-variableWeek4:Treatmenthigh:SpeciesPocillopora damicornis -0.451 -0.707 -0.440 -0.390       
-variableWeek6:Treatmenthigh:SpeciesPocillopora damicornis -0.731 -0.438 -0.705 -0.530  0.620
+                                                          (Intr) vrblW4 vrblW6 Trtmnt
+variableWeek4                                             -0.390                     
+variableWeek6                                             -0.531  0.622              
+Treatmenthigh                                             -0.707  0.276  0.376       
+SpeciesPocillopora damicornis                             -0.729  0.284  0.388  0.516
+variableWeek4:Treatmenthigh                                0.276 -0.707 -0.440 -0.390
+variableWeek6:Treatmenthigh                                0.373 -0.437 -0.703 -0.528
+variableWeek4:SpeciesPocillopora damicornis                0.284 -0.729 -0.454 -0.201
+variableWeek6:SpeciesPocillopora damicornis                0.388 -0.454 -0.729 -0.274
+Treatmenthigh:SpeciesPocillopora damicornis                0.516 -0.201 -0.274 -0.729
+variableWeek4:Treatmenthigh:SpeciesPocillopora damicornis -0.201  0.516  0.321  0.284
+variableWeek6:Treatmenthigh:SpeciesPocillopora damicornis -0.273  0.320  0.514  0.386
+                                                          SpcsPd vrW4:T vrW6:T vW4:Sd
+variableWeek4                                                                        
+variableWeek6                                                                        
+Treatmenthigh                                                                        
+SpeciesPocillopora damicornis                                                        
+variableWeek4:Treatmenthigh                               -0.201                     
+variableWeek6:Treatmenthigh                               -0.272  0.618              
+variableWeek4:SpeciesPocillopora damicornis               -0.390  0.516  0.319       
+variableWeek6:SpeciesPocillopora damicornis               -0.531  0.321  0.513  0.622
+Treatmenthigh:SpeciesPocillopora damicornis               -0.707  0.284  0.385  0.276
+variableWeek4:Treatmenthigh:SpeciesPocillopora damicornis  0.276 -0.729 -0.451 -0.707
+variableWeek6:Treatmenthigh:SpeciesPocillopora damicornis  0.375 -0.452 -0.731 -0.438
+                                                          vW6:Sd Tr:SPd vW4:Td
+variableWeek4                                                                 
+variableWeek6                                                                 
+Treatmenthigh                                                                 
+SpeciesPocillopora damicornis                                                 
+variableWeek4:Treatmenthigh                                                   
+variableWeek6:Treatmenthigh                                                   
+variableWeek4:SpeciesPocillopora damicornis                                   
+variableWeek6:SpeciesPocillopora damicornis                                   
+Treatmenthigh:SpeciesPocillopora damicornis                0.376              
+variableWeek4:Treatmenthigh:SpeciesPocillopora damicornis -0.440 -0.390       
+variableWeek6:Treatmenthigh:SpeciesPocillopora damicornis -0.705 -0.530  0.620
 
 Standardized Within-Group Residuals:
         Min          Q1         Med          Q3         Max 
@@ -131,13 +156,20 @@ $Species
 Pocillopora damicornis-Montipora capitata -0.0844262 -0.1517339 -0.0171185 0.0158713
 
 $`Treatment:Species`
-                                                                  diff          lwr         upr     p adj
-High:Montipora capitata-Ambient:Montipora capitata         -0.01267970 -0.137568529  0.11220913 0.9923343
-Ambient:Pocillopora damicornis-Ambient:Montipora capitata  -0.15376289 -0.283035114 -0.02449067 0.0151824
-High:Pocillopora damicornis-Ambient:Montipora capitata     -0.03257321 -0.157462036  0.09231562 0.8907681
-Ambient:Pocillopora damicornis-High:Montipora capitata     -0.14108319 -0.270355414 -0.01181097 0.0285352
-High:Pocillopora damicornis-High:Montipora capitata        -0.01989351 -0.144782337  0.10499532 0.9717334
-High:Pocillopora damicornis-Ambient:Pocillopora damicornis  0.12118969 -0.008082533  0.25046191 0.0721088
+                                                                  diff          lwr
+High:Montipora capitata-Ambient:Montipora capitata         -0.01267970 -0.137568529
+Ambient:Pocillopora damicornis-Ambient:Montipora capitata  -0.15376289 -0.283035114
+High:Pocillopora damicornis-Ambient:Montipora capitata     -0.03257321 -0.157462036
+Ambient:Pocillopora damicornis-High:Montipora capitata     -0.14108319 -0.270355414
+High:Pocillopora damicornis-High:Montipora capitata        -0.01989351 -0.144782337
+High:Pocillopora damicornis-Ambient:Pocillopora damicornis  0.12118969 -0.008082533
+                                                                   upr     p adj
+High:Montipora capitata-Ambient:Montipora capitata          0.11220913 0.9923343
+Ambient:Pocillopora damicornis-Ambient:Montipora capitata  -0.02449067 0.0151824
+High:Pocillopora damicornis-Ambient:Montipora capitata      0.09231562 0.8907681
+Ambient:Pocillopora damicornis-High:Montipora capitata     -0.01181097 0.0285352
+High:Pocillopora damicornis-High:Montipora capitata         0.10499532 0.9717334
+High:Pocillopora damicornis-Ambient:Pocillopora damicornis  0.25046191 0.0721088
 
 
 	Kruskal-Wallis rank sum test

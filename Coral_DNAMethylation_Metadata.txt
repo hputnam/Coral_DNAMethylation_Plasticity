@@ -1,46 +1,37 @@
-Bulk Methylation Metadata
+#Examination of DNA Methylation and Phenotypic Plasticity in Corals
+#Data published in Putnam et al., Evolutionary Applications 2016 
+#Title: Ocean acidification influences host DNA methylation and phenotypic plasticity in environmentally susceptible corals
+#Contact: Hollie Putnam hollieputnam@gmail.com
+#Supported by: NSF Ocean Sciences Postdoctoral Research Fellowship (NSF OCE PRF-1323822) and NSF EPSCOR (NSF EPS-0903833)
+#last modified 20160704
 
-#########################################################
-Filename=BM_Field_Temp.csv
-Field Temperature 
-20140328 - 20140402 yyyymmdd 1m depth directly adjacent to corals (<1m distance)
-Onset HOBO Water Temperature Pro v2 Data Logger - U22-001
-Operation range†: -40° to 70°C (-40° to 158°F) in air; maximum sustained temperature of 50°C (122°F) in water
-Accuracy: ±0.21°C from 0° to 50°C (±0.38°F from 32° to 122°F)
-Resolution: 0.02°C at 25°C (0.04°F at 77°F)
-Response time: (90%) 5 minutes in water; 12 minutes in air moving 2 m/sec (typical)
-Stability (drift): 0.1°C (0.18°F) per year
-Real-time clock: ± 1 minute per month 0° to 50°C (32° to 122°F)
-serial number 9768602
-
-Date.Time = date and time m/d/yy h:m
-Temperature = degrees Celcius
 
 #########################################################
 Filename=BM_Light_Calibration_Data.csv
 Filename=BM_Tank_Light.csv
-
+Light Data
+Light Loggers calibrated to standard LI-COR LI-1400 data logger with LI-COR Underwater LI-192
 LI-COR LI-1400 data logger - Serial Number: DLA-4023
-Resolution: 16 bit (1 part in 65,536).
-Scanning Speed: 10 channels per second.
-Voltage Accuracy: < 0.15% of full scale reading (25 °C). ± 0.2% (0 to 55 °C).
-Current Accuracy: ± 0.3% of full scale reading (25 °C). ± 0.5% (0 to 55 °C).
-Temperature Coefficient: ± 0.01% of reading per °C.
-Linearity: 0.07%.
+Resolution: 16 bit (1 part in 65,536)
+Scanning Speed: 10 channels per second
+Voltage Accuracy: < 0.15% of full scale reading (25 °C). ± 0.2% (0 to 55 °C)
+Current Accuracy: ± 0.3% of full scale reading (25 °C). ± 0.5% (0 to 55 °C)
+Temperature Coefficient: ± 0.01% of reading per °C
+Linearity: 0.07%
 Frequency Rejection: >90 dB at 50 or 60 Hz (software selectable). 
 
 LI-COR Underwater LI-192 - Serial Number: UWQ-7843
 LI-192SA Underwater Quantum Sensor
 The LI-192SA is cosine corrected and features corrosion resistant, rugged construction for use in freshwater or saltwater and pressures up to 800 psi (5500 kPa, 560 meters depth).
-Absolute Calibration: ± 5% in air traceable to NIST.
-Sensitivity:Typically 4 μA per 1000 μmol s-1 m-2 in water.
+Absolute Calibration: ± 5% in air traceable to NIST
+Sensitivity:Typically 4 μA per 1000 μmol s-1 m-2 in water
 Linearity: Maximum deviation of 1% up to 10,000 μmol s-1 m-2
-Stability: < ± 2% change over a 1 year period.
-Response Time: 10 μs.
-Temperature Dependence:± 0.15% per °C maximum.
-Cosine Correction: Optimized for underwater and atmospheric use.
-Azimuth: < ± 1% error over 360° at 45° elevation.
-Detector: High stability silicon photovoltaic detector(blue enhanced).
+Stability: < ± 2% change over a 1 year period
+Response Time: 10 μs
+Temperature Dependence:± 0.15% per °C maximum
+Cosine Correction: Optimized for underwater and atmospheric use
+Azimuth: < ± 1% error over 360° at 45° elevation
+Detector: High stability silicon photovoltaic detector(blue enhanced)
 Multiplier (in water): -277.26 µmol s-1 m-2 per microamp
 
 Filename=BM_Light_Calibration_Data.csv
@@ -61,30 +52,45 @@ Tank5 Serial Number = 2487
 For Odyssey PAR sensors see Long, M. H., Rheuban, J. E., Berg, P., & Zieman, J. C. (2012). A comparison and correction of light intensity loggers to photosynthetically active radiation sensors. Limnology and Oceanography: Methods, 10(6), 416-424.
 
 #########################################################
+Filename=BM_Field_Temp.csv
+Field Temperature measured 20140328 - 20140402 yyyymmdd 1m depth directly adjacent to corals (<1m distance)
+Onset HOBO Water Temperature Pro v2 Data Logger - U22-001
+Operation range†: -40° to 70°C (-40° to 158°F) in air; maximum sustained temperature of 50°C (122°F) in water
+Accuracy: ±0.21°C from 0° to 50°C (±0.38°F from 32° to 122°F)
+Resolution: 0.02°C at 25°C (0.04°F at 77°F)
+Response time: (90%) 5 minutes in water; 12 minutes in air moving 2 m/sec (typical)
+Stability (drift): 0.1°C (0.18°F) per year
+Real-time clock: ± 1 minute per month 0° to 50°C (32° to 122°F)
+serial number 9768602
+
+Date.Time = date and time m/d/yy h:m
+Temperature = degrees Celcius
+
+#########################################################
+Filename=BM_Tank_Temp.csv
+Onset HOBO Water Temperature Pro v2 Data Logger - U22-001
+#Tank4 = (y4+0.5642)/1.0247 Cross Calibration to temperature standard logger #1
+#Tank5 = (y5+0.2527)/1.0126 Cross Calibration to temperature standard logger #1
+
+Date.Time = date and time m/d/yy h:m
+Tank4 = Serial Number 10489734
+Tank5 = Serial Number 10489735
+
+#########################################################
 Filename=BM_Acclimation.csv
 Date.Time = date and time m/d/yy h:m
-Tank3.Light = Odyssey PAR light loggers, 15 min integrated intensity counts  Tank3 Serial Number = 2485
+Tank3.Light = Odyssey PAR light loggers, 15 min integrated intensity counts  Serial Number = 2485
 Tank3.Temp = Onset HOBO Water Temperature Pro v2 Data Logger - U22-001, 15 minute logging, Serial Number =10487933
 
-
 #########################################################
+Filename=BM_Daily_Measurements.csv
 
-
-
-
-#########################################################
-
-
-
-
-
-#########################################################
-Discrete Temperature
-
+Discrete Temperature Measurements
 Certified Temperature Probe: VWR Traceable Digital Thermometer 
 Model #: 61220-601
 Serial Number: 140073939
 
+Discrete pH Measurements
 pH meter: Thermo Scientific Orion 3 Star pH Portable
 Serial Number: A07104
 
@@ -97,7 +103,7 @@ Length 	149.5 mm
 Shaft diameter 	12 mm
 Calibrated to Dickson Tris standards
 
-Salinity:
+Discrete Salinity Measurements
 YSI 63 pH Salinity Conductivity Temperature
 Salinity
 Range: 0 to 80 ppt
@@ -105,12 +111,88 @@ Resolution: 0.1 ppt
 Accuracy: ±2%, or ± 0.1 ppt 
 Calibrated with YSI Conductivity standard 50,000 microseimens
 
-pH Stat: Neptune Systems Apex Aquacontroller
+Filename=BM_Daily_Measurements.csv
+Date = date Day-Month-Year
+Time = time hh:mm
+Tank = Tank number
+Treatment = pCO2 Treatment level; High = high pCO2, low pH; Ambient = ambient pCO2, ambient pH
+Temperature = measured with above probe °C
+pH = pH measured with above probe on total scale. Calibrated to Dickson Tris standards
+Salinity = salinity as calculated internally from conductivity measured with YSI 63
+
+#########################################################
+Filename=BM_SWChem.csv
+Values used to calculate seawater chemistry table
+
+Measure.Date = Date the water sample was collected yyyymmdd
+Calib.Date = Date the pH probe was calibrated against the Tris standard yyyymmdd 
+Tank = Tank number
+Treatment = pCO2 Treatment level; High = high pCO2, low pH; Ambient = ambient pCO2, ambient pH
+Mass = The mass of the water sample used for total alkalinity titration in grams
+Salinity = salinity as calculated internally from conductivity measured with YSI 63
+TA = total alkalinity calculated from gran titration Dickson et al SOP 
+CRM.TA = The calculated total alkalinity of the Certified Reference Material (CRM Dickson lab)
+CRM = The reported value for the Certified Reference Material (CRM Dickson lab)
+Corrected.TA = The correction of the calculated value against the reported value
+Temperature = measured with above probe °C
+pH.MV = pH measured with above probe on total scale. Calibrated to Dickson Tris standards
+
+#########################################################
+Filename=BM_NBS_pH.csv
+
+Continuous pH Logging (15m min frequency)
+Neptune Systems Apex Aquacontroller
 Lab Grade pH probe – Neptune Systems
 
+Date.Time = date and time m/d/yy h:m
+High.NBS = high pCO2, low pH
+Ambient.NBS = ambient pCO2, ambient pH
 
-Light Logging:
-Odyssey PAR Logger
-Long et al (2012) L&O Methods 416-424
-Submersible to 20m. Cosine corrected photosynthetic irradiance sensor 400-700nm
+#########################################################
+Foldername=pH_Calibration_Files
+Filenames: 20140427.csv, 20140512.csv, 20140523.csv, 20140529.csv, 20140604.csv
+mVTris = measured with above probe in milliVolts
+TTris = temperature of the Tris standard measured with above probe °C
+
+#########################################################
+Filename=BM_Buoyant_Weight_Repeated.csv
+
+Samples were weighed and reweighed if any pieces were broken off or epoxy fell off resulting in an inital weight and final weight for each weighing day.  For the final data, the change in wet is presented as initial weight of the subsequent timepoint minus the final weight of the prior time point, normalized to the final weight of the prior time point and divided by the number of days between for final units of % weight change per day in analysis. Data in file are wet mass measurements.
+
+Species = coral species in experiment (Montipora capitata or Pocillopora damicornis)
+Coral ID = the identification number for each individual fragment
+Treatment = pCO2 Treatment level; High = high pCO2, low pH; Ambient = ambient pCO2, ambient pH
+Initial_01May = wet mass in g based on buoyant weight sensu Spencer-Davies 1989 Mar Bio 101:389-395
+Final_01May = wet mass in g based on buoyant weight sensu Spencer-Davies 1989 Mar Bio 101:389-395 
+Initial_15May = wet mass in g based on buoyant weight sensu Spencer-Davies 1989 Mar Bio 101:389-395
+Final_15May = wet mass in g based on buoyant weight sensu Spencer-Davies 1989 Mar Bio 101:389-395 
+Initial_29May = wet mass in g based on buoyant weight sensu Spencer-Davies 1989 Mar Bio 101:389-395
+Final_29May = wet mass in g based on buoyant weight sensu Spencer-Davies 1989 Mar Bio 101:389-395 
+Initial_12June = wet mass in g based on buoyant weight sensu Spencer-Davies 1989 Mar Bio 101:389-395
+
+#########################################################
+Filename=BM_NMR_Data_0.04binned_truncated_nowater.csv
+
+FID = NMR Sample ID corresponding to Coral ID found in BM_NMR_sample_info.csv
+All remaining columns = NMR spectra bins in ascending order
+
+#########################################################
+Filename=BM_NMR_sample_info.csv
+
+SpeciesNumber = 1=Pocillopora damicornis; 2=Montipora capitata
+Species = coral species in experiment (Montipora capitata or Pocillopora damicornis)
+Coral ID = the identification number for each individual fragment
+Treatment = pCO2 Treatment level; High = high pCO2, low pH; Ambient = ambient pCO2, ambient pH
+Extract.Weight.g = weight of sample following methanol extraction, used to normalize samples
+FID = NMR Sample ID corresponding to Coral ID
+ExtractID = number of extract ID for NMR 
+
+#########################################################
+Filename=BM_Methylation.csv
+
+Coral ID = the identification number for each individual fragment
+Species = coral species in experiment (Montipora capitata or Pocillopora damicornis)
+Treatment = pCO2 Treatment level; High = high pCO2, low pH; Ambient = ambient pCO2, ambient pH
+Sample = Methylation assay sample number
+Methylation = % methylation relative to total DNA concentration
 
